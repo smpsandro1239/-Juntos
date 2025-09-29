@@ -1,0 +1,53 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pr-checks:
+    name: Pull Request Checks
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint & Test
+        # Adicionar aqui os passos para lint e testes (e.g., make lint, make test)
+        run: echo "Running lint and tests..."
+
+      - name: SonarCloud Scan
+        # Adicionar aqui a configuração do SonarCloud
+        run: echo "Running SonarCloud scan..."
+
+      - name: Trivy Container Scan
+        # Adicionar aqui a configuração do Trivy
+        run: echo "Running Trivy scan..."
+
+  build:
+    name: Build & Push Docker Image
+    needs: pr-checks
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and Push
+        # Adicionar aqui os passos para build e push da imagem Docker
+        run: echo "Building and pushing Docker image..."
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        # Adicionar aqui os passos para deploy em staging (e.g., via ArgoCD)
+        run: echo "Deploying to staging..."

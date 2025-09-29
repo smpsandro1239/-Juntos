@@ -1,0 +1,56 @@
+
+# General
+.DS_Store
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.suo
+*.user
+*.sln
+*.log
+
+# Build artifacts
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.jar
+*.war
+
+# Dependency directories
+/apps/admin/node_modules/
+/ios/Pods/
+/ios/Flutter/App.framework
+/ios/Flutter/engine
+/ios/Flutter/flutter_assets
+
+# Secrets and local configuration
+*.env
+secrets.json
+local.properties
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Mobile
+/android/.gradle/
+/android/app/build/
+/android/build/
+/ios/build/
+/ios/DerivedData/
+
+# Mac
+.AppleDouble
+.LSOverride
+.Trashes
+.fseventsd
