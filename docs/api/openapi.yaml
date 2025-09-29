@@ -369,6 +369,35 @@ components:
         description:
           type: string
 
+  /rank:
+    post:
+      summary: Obtém uma lista de POIs ordenada por relevância
+      operationId: getRankedPois
+      tags:
+        - Ranking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                features:
+                  type: object
+      responses:
+        '200':
+          description: Uma lista de POIs ordenada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ranked_pois:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+
   securitySchemes:
     firebaseAuth:
       type: http
