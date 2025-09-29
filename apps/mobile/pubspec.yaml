@@ -1,18 +1,17 @@
 # +JUNTOS
 # Ficheiro: apps/mobile/pubspec.yaml
-# Descrição: Dependências e metadados do projeto Flutter
+# Descrição: Configuração Flutter para app móvel
 # Autor: (+JUNTOS team)
 # Locale: pt_PT
 
 name: mobile
-description: A new Flutter project.
-
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
-
+description: +JUNTOS - Descobre tudo o que podes fazer com a família
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: ">=3.19.0"
 
 dependencies:
   flutter:
@@ -20,33 +19,67 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # Core
-  riverpod: ^2.5.1
-  flutter_riverpod: ^2.5.1
-  riverpod_annotation: ^2.3.5 # Adicionado
-  go_router: ^13.2.0
-  dio: ^5.4.1
-  intl: ^0.20.2
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # HTTP & API
+  dio: ^5.4.0
+  retrofit: ^4.0.3
+  json_annotation: ^4.8.1
 
   # Database
-  drift: ^2.15.0
-  sqlite3_flutter_libs: ^0.5.20
+  drift: ^2.14.1
+  sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.2
-  path: ^1.9.0
+  path: ^1.8.3
+
+  # Maps
+  mapbox_gl: ^0.16.0
+
+  # Localization
+  intl: ^0.19.0
 
   # UI
-  mapbox_gl: ^0.20.0
-  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+
+  # Utils
+  equatable: ^2.0.5
+  uuid: ^4.3.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^3.0.0
-  build_runner: ^2.4.8
-  drift_dev: ^2.15.0
-  riverpod_generator: ^2.4.0
+  
+  # Code Generation
+  build_runner: ^2.4.7
+  riverpod_generator: ^2.3.9
+  retrofit_generator: ^8.0.4
+  json_serializable: ^6.7.1
+  drift_dev: ^2.14.1
 
 flutter:
   uses-material-design: true
   generate: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/lottie/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

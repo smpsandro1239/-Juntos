@@ -1,49 +1,80 @@
-
 # +JUNTOS
-# Ficheiro: backend/service-core/src/main/resources/application.yml
-# Descrição: Configuração principal da aplicação
+# Ficheiro: src/main/resources/application.yml
+# Descrição: Configuração Spring Boot
 # Autor: (+JUNTOS team)
 # Locale: pt_PT
 
 spring:
   application:
-    name: service-core
+    name: juntos-core
+  profiles:
+    active: dev
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:juntos_dev}
+    username: ${DB_USER:juntos}
+    password: ${DB_PASSWORD:juntos123}
+  flyway:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:juntos_dev}
+    user: ${DB_USER:juntos}
+    password: ${DB_PASSWORD:juntos123}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v1/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    pt.juntos: DEBUG
+    org.springframework.r2dbc: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 ---
-
 spring:
   config:
     activate:
       on-profile: dev
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/juntos_dev
-    username: user
-    password: password
-  flyway:
-    url: jdbc:postgresql://localhost:5432/juntos_dev
 
 ---
-
 spring:
   config:
     activate:
       on-profile: stg
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASS}
-  flyway:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    url: r2dbc:postgresql://${DB_HOST}:5432/juntos_stg
+
+logging:
+  level:
+    pt.juntos: INFO
 
 ---
-
 spring:
   config:
     activate:
       on-profile: prod
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASS}
-  flyway:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    url: r2dbc:postgresql://${DB_HOST}:5432/juntos_prod
+
+logging:
+  level:
+    root: WARN
+    pt.juntos: INFO

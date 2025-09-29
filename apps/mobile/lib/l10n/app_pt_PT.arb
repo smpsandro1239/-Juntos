@@ -1,6 +1,107 @@
-
 {
   "@@locale": "pt_PT",
+  "@@last_modified": "2025-01-27T10:00:00.000Z",
+  
   "appTitle": "+JUNTOS",
-  "discoverTitle": "Descobrir"
+  "@appTitle": {
+    "description": "Título da aplicação"
+  },
+  
+  "appSlogan": "Descobre tudo o que podes fazer com a família, onde quer que estejas.",
+  "@appSlogan": {
+    "description": "Slogan da aplicação"
+  },
+  
+  "onboardingTitle1": "Bem-vindo ao +JUNTOS",
+  "onboardingDesc1": "A tua caixa de Pandora digital para atividades familiares em Portugal.",
+  
+  "onboardingTitle2": "Idades das Crianças",
+  "onboardingDesc2": "Diz-nos as idades para mostrarmos atividades adequadas.",
+  
+  "onboardingTitle3": "Localização",
+  "onboardingDesc3": "Permite acesso à localização para encontrarmos atividades próximas.",
+  
+  "continuar": "Continuar",
+  "comecar": "Começar",
+  "permitir": "Permitir",
+  "agora_nao": "Agora não",
+  
+  "descobrir": "Descobrir",
+  "mapa": "Mapa",
+  "favoritos": "Favoritos",
+  "perfil": "Perfil",
+  
+  "perto_de_ti": "Perto de ti",
+  "gratis": "Grátis",
+  "interior": "Interior",
+  "exterior": "Exterior",
+  "acessivel": "Acessível",
+  
+  "parques": "Parques",
+  "museus": "Museus",
+  "praias": "Praias",
+  "trilhos": "Trilhos",
+  "teatros": "Teatros",
+  
+  "pesquisar": "Pesquisar atividades...",
+  "sem_resultados": "Sem resultados encontrados",
+  "erro_carregar": "Erro ao carregar dados",
+  "tentar_novamente": "Tentar novamente",
+  
+  "detalhes": "Detalhes",
+  "como_chegar": "Como chegar",
+  "guardar": "Guardar",
+  "partilhar": "Partilhar",
+  "avaliar": "Avaliar",
+  
+  "horarios": "Horários",
+  "precos": "Preços",
+  "contactos": "Contactos",
+  "comodidades": "Comodidades",
+  
+  "estacionamento": "Estacionamento",
+  "wc": "WC",
+  "cafetaria": "Cafetaria",
+  "mudaFraldas": "Muda-fraldas",
+  
+  "aberto": "Aberto",
+  "fechado": "Fechado",
+  "aberto_ate": "Aberto até {hora}",
+  "@aberto_ate": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "distancia_km": "{distancia} km",
+  "@distancia_km": {
+    "placeholders": {
+      "distancia": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "idades_anos": "{min}-{max} anos",
+  "@idades_anos": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "preco_desde": "Desde {preco}€",
+  "@preco_desde": {
+    "placeholders": {
+      "preco": {
+        "type": "String"
+      }
+    }
+  }
 }

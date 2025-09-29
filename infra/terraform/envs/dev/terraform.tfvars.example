@@ -1,8 +1,18 @@
-
 # +JUNTOS
 # Ficheiro: infra/terraform/envs/dev/terraform.tfvars.example
-# Descrição: Exemplo de valores para as variáveis de infraestrutura
+# Descrição: Exemplo de variáveis Terraform
 # Autor: (+JUNTOS team)
 # Locale: pt_PT
 
-gcp_project_id = "juntos-dev"
+# Configuração GCP
+project_id = "juntos-dev-123456"
+region     = "europe-west1"
+zone       = "europe-west1-b"
+
+# Configuração da aplicação
+project_name = "juntos-dev"
+
+# Base de dados
+database_name     = "juntos_dev"
+database_user     = "juntos"
+database_password = "CHANGE_ME_STRONG_PASSWORD"

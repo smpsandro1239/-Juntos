@@ -1,408 +1,388 @@
-
 # +JUNTOS
 # Ficheiro: docs/api/openapi.yaml
-# Descrição: Especificação da API v1
+# Descrição: Especificação OpenAPI 3.1 da API +JUNTOS
 # Autor: (+JUNTOS team)
 # Locale: pt_PT
 
 openapi: 3.1.0
 info:
   title: +JUNTOS API
-  version: v1
-  description: API para a plataforma +JUNTOS.
+  description: API para descoberta de atividades familiares em Portugal
+  version: 1.0.0
   contact:
-    name: +JUNTOS Team
-    email: tech@juntos.pt
+    name: Equipa +JUNTOS
+    email: dev@juntos.pt
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
 servers:
-  - url: http://localhost:8080/v1
-    description: Servidor de Desenvolvimento
   - url: https://api.juntos.pt/v1
-    description: Servidor de Produção
+    description: Produção
+  - url: https://api-stg.juntos.pt/v1
+    description: Staging
+  - url: http://localhost:8080/v1
+    description: Desenvolvimento
+
+security:
+  - FirebaseAuth: []
 
 paths:
   /pois:
     get:
-      summary: Lista todos os Pontos de Interesse (POIs)
-      operationId: getAllPois
-      tags:
-        - POIs
+      summary: Listar POIs próximos
+      description: Encontra pontos de interesse próximos filtrados por idade das crianças
+      tags: [POIs]
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            example: 38.7223
+          description: Latitude
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            example: -9.1393
+          description: Longitude
+        - name: raio
+          in: query
+          schema:
+            type: integer
+            default: 5000
+            minimum: 100
+            maximum: 50000
+          description: Raio em metros
+        - name: idadeMin
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 12
+          description: Idade mínima das crianças
+        - name: idadeMax
+          in: query
+          schema:
+            type: integer
+            default: 12
+            minimum: 0
+            maximum: 12
+          description: Idade máxima das crianças
+        - name: limite
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Limite de resultados
       responses:
         '200':
-          description: Uma lista de POIs.
+          description: Lista de POIs encontrados
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Poi'
-    post:
-      summary: Cria um novo Ponto de Interesse
-      operationId: createPoi
-      tags:
-        - POIs
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PoiInput'
+
+  /pois/search:
+    get:
+      summary: Pesquisar POIs
+      description: Pesquisa POIs por nome ou descrição
+      tags: [POIs]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            example: "parque infantil"
+          description: Termo de pesquisa
+        - name: limite
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
       responses:
-        '201':
-          description: POI criado com sucesso.
+        '200':
+          description: Resultados da pesquisa
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Poi'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Poi'
 
   /pois/{id}:
     get:
-      summary: Obtém um POI pelo seu ID
-      operationId: getPoiById
-      tags:
-        - POIs
+      summary: Obter POI por ID
+      description: Retorna detalhes completos de um POI
+      tags: [POIs]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         '200':
-          description: O POI solicitado.
+          description: Detalhes do POI
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Poi'
         '404':
-          description: POI não encontrado.
-
-components:
-  schemas:
-    Poi:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        address:
-          type: string
-        city:
-          type: string
-        postalCode:
-          type: string
-        country:
-          type: string
-        website:
-          type: string
-        phone:
-          type: string
-        price:
-          type: number
-          format: double
-        minAge:
-          type: integer
-        maxAge:
-          type: integer
-        indoor:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    PoiInput:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
+          description: POI não encontrado
 
   /events:
     get:
-      summary: Lista todos os Eventos
-      operationId: getAllEvents
-      tags:
-        - Eventos
+      summary: Listar eventos
+      description: Lista eventos temporários próximos
+      tags: [Eventos]
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: dataInicio
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: dataFim
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
       responses:
         '200':
-          description: Uma lista de Eventos.
+          description: Lista de eventos
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Event'
-    post:
-      summary: Cria um novo Evento
-      operationId: createEvent
-      tags:
-        - Eventos
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EventInput'
-      responses:
-        '201':
-          description: Evento criado com sucesso.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Event'
-
-  /events/{id}:
-    get:
-      summary: Obtém um Evento pelo seu ID
-      operationId: getEventById
-      tags:
-        - Eventos
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: O Evento solicitado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Event'
-        '404':
-          description: Evento não encontrado.
-
-  /subscriptions/subscribe:
-    post:
-      summary: Cria uma sessão de checkout para subscrição
-      operationId: subscribe
-      tags:
-        - Subscrições
-      responses:
-        '200':
-          description: URL de checkout do Stripe.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  checkout_url:
-                    type: string
-                    format: url
-
-  /webhooks/stripe:
-    post:
-      summary: Webhook para eventos do Stripe
-      operationId: handleStripeWebhook
-      tags:
-        - Webhooks
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        '200':
-          description: Webhook recebido com sucesso.
 
 components:
-  schemas:
-    Event:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-        poiId:
-          type: string
-          format: uuid
-        startDate:
-          type: string
-          format: date-time
-        endDate:
-          type: string
-          format: date-time
-        price:
-          type: number
-          format: double
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    EventInput:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        poiId:
-          type: string
-          format: uuid
-        startDate:
-          type: string
-          format: date-time
-        endDate:
-          type: string
-          format: date-time
-        price:
-          type: number
-          format: double
-
-  /albums:
-    get:
-      summary: Lista todos os Albuns
-      operationId: getAllAlbums
-      tags:
-        - Albuns
-      responses:
-        '200':
-          description: Uma lista de Albuns.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Album'
-    post:
-      summary: Cria um novo Album
-      operationId: createAlbum
-      tags:
-        - Albuns
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlbumInput'
-      responses:
-        '201':
-          description: Album criado com sucesso.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Album'
-
-  /albums/{id}:
-    get:
-      summary: Obtém um Album pelo seu ID
-      operationId: getAlbumById
-      tags:
-        - Albuns
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: O Album solicitado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Album'
-        '404':
-          description: Album não encontrado.
-
-components:
-  schemas:
-    Album:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        title:
-          type: string
-        description:
-          type: string
-        coverImageUrl:
-          type: string
-          format: url
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    AlbumInput:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-
-  /rank:
-    post:
-      summary: Obtém uma lista de POIs ordenada por relevância
-      operationId: getRankedPois
-      tags:
-        - Ranking
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                features:
-                  type: object
-      responses:
-        '200':
-          description: Uma lista de POIs ordenada.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ranked_pois:
-                    type: array
-                    items:
-                      type: string
-                      format: uuid
-
   securitySchemes:
-    firebaseAuth:
+    FirebaseAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: Token JWT do Firebase Authentication
 
-security:
-  - firebaseAuth: []
+  schemas:
+    Poi:
+      type: object
+      required:
+        - nome
+        - descricao
+        - categoria
+        - idadeMin
+        - idadeMax
+        - precoMin
+        - precoMax
+        - latitude
+        - longitude
+        - morada
+        - codigoPostal
+        - cidade
+        - distrito
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nome:
+          type: string
+          maxLength: 255
+          example: "Parque Infantil da Gulbenkian"
+        descricao:
+          type: string
+          example: "Parque infantil com equipamentos para várias idades"
+        categoria:
+          type: string
+          enum: [parque, museu, praia, trilho, teatro, cinema, zoo, aquario, quinta, biblioteca]
+          example: "parque"
+        idadeMin:
+          type: integer
+          minimum: 0
+          maximum: 12
+          example: 2
+        idadeMax:
+          type: integer
+          minimum: 0
+          maximum: 12
+          example: 10
+        precoMin:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 0.00
+        precoMax:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 5.00
+        latitude:
+          type: number
+          format: double
+          example: 38.7223
+        longitude:
+          type: number
+          format: double
+          example: -9.1393
+        morada:
+          type: string
+          example: "Av. de Berna, 45A"
+        codigoPostal:
+          type: string
+          pattern: '^\d{4}-\d{3}$'
+          example: "1067-001"
+        cidade:
+          type: string
+          example: "Lisboa"
+        distrito:
+          type: string
+          example: "Lisboa"
+        telefone:
+          type: string
+          nullable: true
+          example: "+351 217 823 000"
+        website:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://gulbenkian.pt"
+        acessibilidade:
+          type: boolean
+          example: true
+        estacionamento:
+          type: boolean
+          example: true
+        wc:
+          type: boolean
+          example: true
+        interior:
+          type: boolean
+          example: false
+        exterior:
+          type: boolean
+          example: true
+        ativo:
+          type: boolean
+          example: true
+
+    Event:
+      type: object
+      required:
+        - nome
+        - descricao
+        - categoria
+        - dataInicio
+        - dataFim
+        - latitude
+        - longitude
+        - morada
+        - cidade
+      properties:
+        id:
+          type: integer
+          format: int64
+        nome:
+          type: string
+          example: "Espetáculo de Marionetas"
+        descricao:
+          type: string
+          example: "Espetáculo interativo para crianças dos 3 aos 8 anos"
+        categoria:
+          type: string
+          enum: [teatro, musica, workshop, feira, circo, cinema]
+        idadeMin:
+          type: integer
+          minimum: 0
+          maximum: 12
+        idadeMax:
+          type: integer
+          minimum: 0
+          maximum: 12
+        preco:
+          type: number
+          format: decimal
+          minimum: 0
+        dataInicio:
+          type: string
+          format: date-time
+        dataFim:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        morada:
+          type: string
+        cidade:
+          type: string
+        distrito:
+          type: string
+        lotacaoMaxima:
+          type: integer
+          nullable: true
+        lotacaoAtual:
+          type: integer
+        reservaObrigatoria:
+          type: boolean
+        urlReserva:
+          type: string
+          format: uri
+          nullable: true
+
+    Error:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://api.juntos.pt/errors/validation-error"
+        title:
+          type: string
+          example: "Erro de validação"
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: "O campo 'lat' é obrigatório"
+        instance:
+          type: string
+          format: uri
+          example: "/v1/pois?lng=-9.1393"

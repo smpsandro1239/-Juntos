@@ -1,7 +1,6 @@
-
 // +JUNTOS
-// Ficheiro: backend/service-core/src/main/kotlin/pt/juntos/core/domain/Review.kt
-// Descrição: Modelo de dados para uma Review
+// Ficheiro: src/main/kotlin/pt/juntos/core/domain/Review.kt
+// Descrição: Entidade Review
 // Autor: (+JUNTOS team)
 // Locale: pt_PT
 
@@ -9,17 +8,21 @@ package pt.juntos.core.domain
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
-import java.time.OffsetDateTime
-import java.util.UUID
+import java.time.LocalDateTime
 
 @Table("reviews")
 data class Review(
     @Id
-    val id: UUID = UUID.randomUUID(),
-    val userId: UUID,
-    val entityId: UUID, // Can be a POI or Event
-    val entityType: String, // "POI" or "EVENT"
-    val rating: Int, // 1 to 5
-    val comment: String? = null,
-    val createdAt: OffsetDateTime = OffsetDateTime.now()
+    val id: Long? = null,
+    val userId: Long,
+    val poiId: Long? = null,
+    val eventId: Long? = null,
+    val classificacao: Int, // 1-5
+    val comentario: String? = null,
+    val acessibilidadeOk: Boolean? = null,
+    val estacionamentoOk: Boolean? = null,
+    val wcOk: Boolean? = null,
+    val urlsFotos: String? = null, // JSON array
+    val aprovado: Boolean = false,
+    val criadoEm: LocalDateTime = LocalDateTime.now()
 )
