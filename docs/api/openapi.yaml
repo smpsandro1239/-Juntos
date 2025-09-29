@@ -279,6 +279,96 @@ components:
           type: number
           format: double
 
+  /albums:
+    get:
+      summary: Lista todos os Albuns
+      operationId: getAllAlbums
+      tags:
+        - Albuns
+      responses:
+        '200':
+          description: Uma lista de Albuns.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Album'
+    post:
+      summary: Cria um novo Album
+      operationId: createAlbum
+      tags:
+        - Albuns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlbumInput'
+      responses:
+        '201':
+          description: Album criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+
+  /albums/{id}:
+    get:
+      summary: Obtém um Album pelo seu ID
+      operationId: getAlbumById
+      tags:
+        - Albuns
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: O Album solicitado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+        '404':
+          description: Album não encontrado.
+
+components:
+  schemas:
+    Album:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        coverImageUrl:
+          type: string
+          format: url
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AlbumInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
   securitySchemes:
     firebaseAuth:
       type: http

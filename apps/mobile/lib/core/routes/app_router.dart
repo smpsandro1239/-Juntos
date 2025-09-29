@@ -14,6 +14,8 @@ import 'package:mobile/events/events_screen.dart';
 
 import 'package:mobile/premium/paywall_screen.dart';
 
+import 'package:mobile/album/album_screen.dart';
+
 part 'app_router.g.dart';
 
 @riverpod
@@ -32,6 +34,10 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/premium',
         builder: (context, state) => const PaywallScreen(),
+      ),
+      GoRoute(
+        path: '/album',
+        builder: (context, state) => const AlbumScreen(),
       ),
     ],
   );
