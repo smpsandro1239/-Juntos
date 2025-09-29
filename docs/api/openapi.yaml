@@ -1,0 +1,147 @@
+
+# +JUNTOS
+# Ficheiro: docs/api/openapi.yaml
+# Descrição: Especificação da API v1
+# Autor: (+JUNTOS team)
+# Locale: pt_PT
+
+openapi: 3.1.0
+info:
+  title: +JUNTOS API
+  version: v1
+  description: API para a plataforma +JUNTOS.
+  contact:
+    name: +JUNTOS Team
+    email: tech@juntos.pt
+servers:
+  - url: http://localhost:8080/v1
+    description: Servidor de Desenvolvimento
+  - url: https://api.juntos.pt/v1
+    description: Servidor de Produção
+
+paths:
+  /pois:
+    get:
+      summary: Lista todos os Pontos de Interesse (POIs)
+      operationId: getAllPois
+      tags:
+        - POIs
+      responses:
+        '200':
+          description: Uma lista de POIs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Poi'
+    post:
+      summary: Cria um novo Ponto de Interesse
+      operationId: createPoi
+      tags:
+        - POIs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PoiInput'
+      responses:
+        '201':
+          description: POI criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Poi'
+
+  /pois/{id}:
+    get:
+      summary: Obtém um POI pelo seu ID
+      operationId: getPoiById
+      tags:
+        - POIs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: O POI solicitado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Poi'
+        '404':
+          description: POI não encontrado.
+
+components:
+  schemas:
+    Poi:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        website:
+          type: string
+        phone:
+          type: string
+        price:
+          type: number
+          format: double
+        minAge:
+          type: integer
+        maxAge:
+          type: integer
+        indoor:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PoiInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+
+  securitySchemes:
+    firebaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - firebaseAuth: []
