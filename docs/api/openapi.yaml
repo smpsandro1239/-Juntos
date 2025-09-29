@@ -137,6 +137,114 @@ components:
           type: number
           format: double
 
+  /events:
+    get:
+      summary: Lista todos os Eventos
+      operationId: getAllEvents
+      tags:
+        - Eventos
+      responses:
+        '200':
+          description: Uma lista de Eventos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      summary: Cria um novo Evento
+      operationId: createEvent
+      tags:
+        - Eventos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '201':
+          description: Evento criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /events/{id}:
+    get:
+      summary: Obtém um Evento pelo seu ID
+      operationId: getEventById
+      tags:
+        - Eventos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: O Evento solicitado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Evento não encontrado.
+
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        poiId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    EventInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        poiId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: double
+
   securitySchemes:
     firebaseAuth:
       type: http
