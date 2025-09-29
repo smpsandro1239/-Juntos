@@ -194,6 +194,40 @@ components:
         '404':
           description: Evento não encontrado.
 
+  /subscriptions/subscribe:
+    post:
+      summary: Cria uma sessão de checkout para subscrição
+      operationId: subscribe
+      tags:
+        - Subscrições
+      responses:
+        '200':
+          description: URL de checkout do Stripe.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checkout_url:
+                    type: string
+                    format: url
+
+  /webhooks/stripe:
+    post:
+      summary: Webhook para eventos do Stripe
+      operationId: handleStripeWebhook
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook recebido com sucesso.
+
 components:
   schemas:
     Event:

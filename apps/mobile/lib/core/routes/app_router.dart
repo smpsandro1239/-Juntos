@@ -12,6 +12,8 @@ import 'package:mobile/discover/discover_screen.dart';
 
 import 'package:mobile/events/events_screen.dart';
 
+import 'package:mobile/premium/paywall_screen.dart';
+
 part 'app_router.g.dart';
 
 @riverpod
@@ -26,6 +28,10 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/events',
         builder: (context, state) => const EventsScreen(),
+      ),
+      GoRoute(
+        path: '/premium',
+        builder: (context, state) => const PaywallScreen(),
       ),
     ],
   );
