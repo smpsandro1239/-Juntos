@@ -1,0 +1,90 @@
+# +JUNTOS
+# Ficheiro: docker-compose.dev.yml
+# Descrição: Configuração Docker para ambiente de desenvolvimento
+# Autor: (+JUNTOS team)
+# Locale: pt_PT
+
+version: '3.8'
+
+services:
+  # Base de dados PostgreSQL com PostGIS
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: juntos-postgres
+    environment:
+      POSTGRES_DB: juntos_dev
+      POSTGRES_USER: juntos_user
+      POSTGRES_PASSWORD: juntos_pass
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./scripts/sql/schema.sql:/docker-entrypoint-initdb.d/02-schema.sql
+      - ./scripts/sql/data.sql:/docker-entrypoint-initdb.d/03-data.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - juntos-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U juntos_user -d juntos_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: juntos-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - juntos-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Adminer para gestão da base de dados (interface web)
+  adminer:
+    image: adminer:4.8.1
+    container_name: juntos-adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - juntos-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Redis Commander para gestão do Redis (interface web)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: juntos-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8082:8081"
+    networks:
+      - juntos-network
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  juntos-network:
+    driver: bridge
+    name: juntos-dev-network

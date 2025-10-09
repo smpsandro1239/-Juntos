@@ -1,0 +1,120 @@
+# +JUNTOS - PR Checks
+# Ficheiro: .github/workflows/pr-checks.yml
+# Descrição: Verificações rápidas para pull requests
+# Autor: (+JUNTOS team)
+# Locale: pt_PT
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ===========================================
+  # CODE QUALITY CHECKS
+  # ===========================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.19.0"
+          channel: "stable"
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            apps/admin/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('apps/admin/package-lock.json') }}
+
+      - name: Cache Flutter
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('apps/mobile/pubspec.lock') }}
+
+      - name: Backend - Check code style
+        working-directory: ./backend/service-core
+        run: ./gradlew check --no-daemon
+
+      - name: Admin - Install dependencies
+        working-directory: ./apps/admin
+        run: npm ci
+
+      - name: Admin - Check code style
+        working-directory: ./apps/admin
+        run: npm run lint
+
+      - name: Mobile - Install dependencies
+        working-directory: ./apps/mobile
+        run: flutter pub get
+
+      - name: Mobile - Check code style
+        working-directory: ./apps/mobile
+        run: flutter analyze
+
+  # ===========================================
+  # DEPENDENCY CHECKS
+  # ===========================================
+  dependencies:
+    name: Dependency Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Backend - Check for dependency updates
+        working-directory: ./backend/service-core
+        run: ./gradlew dependencyUpdates --no-daemon
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Admin - Check for dependency updates
+        working-directory: ./apps/admin
+        run: npm outdated || true
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.19.0"
+          channel: "stable"
+
+      - name: Mobile - Check for dependency updates
+        working-directory: ./apps/mobile
+        run: flutter pub outdated

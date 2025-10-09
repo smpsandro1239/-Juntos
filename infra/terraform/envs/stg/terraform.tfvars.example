@@ -1,0 +1,15 @@
+# +JUNTOS - Staging Environment Variables
+# Copy this file to terraform.tfvars and adjust the values
+
+# GCP Configuration
+project_id = "juntos-stg-123456"
+region     = "europe-west1"
+zone       = "europe-west1-b"
+
+# Application Configuration
+project_name = "juntos-stg"
+
+# Database
+database_name     = "juntos_stg"
+database_user     = "juntos_user"
+database_password = "CHANGE_ME_STRONG_PASSWORD_STG"

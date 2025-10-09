@@ -2,41 +2,75 @@
 
 **Objetivo:** Configurar e executar o projeto +JUNTOS localmente em menos de 15 minutos.
 
-## 🚀 Início Rápido (3 passos)
+## 🚀 Início Rápido (4 passos)
 
-### 1. Instalar Dependências
+### 1. Instalar Dependências do Sistema
 ```bash
 # Clonar repositório (se ainda não tiver)
 git clone https://github.com/smpsandro1239/-Juntos.git
 cd +Juntos
 
-# Instalar todas as dependências automaticamente
+# Instalar todas as dependências do sistema automaticamente
 make install
 ```
 
-### 2. Configurar Ambiente
+### 2. Configurar Variáveis de Ambiente
 ```bash
-# Configuração inicial completa
-make dev-setup
+# Copiar arquivos de exemplo
+cp backend/.env.example backend/.env
+cp apps/admin/.env.example apps/admin/.env
+cp apps/mobile/.env.example apps/mobile/.env
+
+# Editar os arquivos .env com suas configurações
 ```
 
-### 3. Executar Localmente
+### 3. Iniciar Infraestrutura
 ```bash
-# Iniciar todos os serviços
+# Iniciar PostgreSQL e Redis
 make docker-up
 
+# Verificar se os serviços estão funcionando
+make status
+```
+
+### 4. Executar Aplicações
+```bash
 # Em terminais separados:
 make backend-run    # Backend Kotlin (porta 8080)
 make admin-dev      # Admin React (porta 3000)
 make flutter-run    # App móvel (emulador/dispositivo)
 ```
 
-## 📋 Verificação Rápida
+## 🐳 Infraestrutura Docker
+
+O projeto utiliza Docker para gerenciar os serviços de desenvolvimento:
+
+### Serviços Disponíveis
+- **PostgreSQL + PostGIS:** Base de dados principal (porta 5432)
+- **Redis:** Cache e sessões (porta 6379)
+- **Adminer:** Interface web para PostgreSQL (porta 8081)
+- **Redis Commander:** Interface web para Redis (porta 8082)
+
+### Comandos Úteis
+```bash
+# Ver logs de todos os serviços
+make logs
+
+# Parar todos os serviços
+make docker-down
+
+# Reset completo (limpa volumes)
+make dev-reset
+```
+
+##  Verificação Rápida
 
 Após a instalação, verifique se tudo está a funcionar:
 
 - **Backend API:** http://localhost:8080/swagger-ui.html
 - **Admin Panel:** http://localhost:3000
+- **Adminer (DB):** http://localhost:8081
+- **Redis Commander:** http://localhost:8082
 - **App Móvel:** Emulador Android/iOS ou dispositivo físico
 
 ## 🛠 Comandos Úteis
