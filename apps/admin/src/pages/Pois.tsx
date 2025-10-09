@@ -4,17 +4,20 @@
 // Autor: (+JUNTOS team)
 // Locale: pt_PT
 
-import React from 'react';
+import { Add, Delete, Edit, Visibility } from '@mui/icons-material';
 import {
+  Alert,
   Box,
-  Typography,
   Button,
   Paper,
+  Snackbar,
+  Typography,
 } from '@mui/material';
-import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
-import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../services/api';
+import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import PoiForm from '../components/PoiForm';
+import { poisApi } from '../services/api';
 
 interface Poi {
   id: number;
@@ -81,31 +84,73 @@ const columns: GridColDef[] = [
 
 const handleView = (id: number) => {
   console.log('Ver POI:', id);
-  // TODO: Implementar visualização
+  // TODO: Implementar visualização detalhada
 };
 
-const handleEdit = (id: number) => {
-  console.log('Editar POI:', id);
-  // TODO: Implementar edição
+const handleEdit = (id: number, pois: Poi[]) => {
+  const poi = pois.find(p => p.id === id);
+  if (poi) {
+    setEditingPoi(poi);
+    setFormOpen(true);
+  }
 };
 
 const handleDelete = (id: number) => {
-  console.log('Eliminar POI:', id);
-  // TODO: Implementar eliminação
+  if (window.confirm('Tem certeza que deseja eliminar este POI?')) {
+    deleteMutation.mutate(id);
+  }
 };
 
 export default function Pois() {
+  const queryClient = useQueryClient();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingPoi, setEditingPoi] = useState<Poi | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
   const { data: pois = [], isLoading, error } = useQuery({
     queryKey: ['pois'],
-    queryFn: () => apiClient.get<Poi[]>('/pois').then(res => res.data),
+    queryFn: () => poisApi.getAll().then(res => res.data),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => poisApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pois'] });
+      setSnackbar({
+        open: true,
+        message: 'POI eliminado com sucesso!',
+        severity: 'success',
+      });
+    },
+    onError: () => {
+      setSnackbar({
+        open: true,
+        message: 'Erro ao eliminar POI. Tente novamente.',
+        severity: 'error',
+      });
+    },
+  });
+
+  const handleCreatePoi = () => {
+    setEditingPoi(null);
+    setFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setFormOpen(false);
+    setEditingPoi(null);
+  };
 
   if (error) {
     return (
       <Box>
-        <Typography color="error">
+        <Alert severity="error" sx={{ mb: 2 }}>
           Erro ao carregar POIs: {(error as Error).message}
-        </Typography>
+        </Alert>
       </Box>
     );
   }
@@ -119,7 +164,7 @@ export default function Pois() {
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => console.log('Adicionar POI')}
+          onClick={handleCreatePoi}
         >
           Adicionar POI
         </Button>
@@ -128,7 +173,29 @@ export default function Pois() {
       <Paper sx={{ height: 600, width: '100%' }}>
         <DataGrid
           rows={pois}
-          columns={columns}
+          columns={columns.map(col => ({
+            ...col,
+            getActions: col.field === 'actions' ? (params: any) => [
+              <GridActionsCellItem
+                key="view"
+                icon={<Visibility />}
+                label="Ver"
+                onClick={() => handleView(params.id as number)}
+              />,
+              <GridActionsCellItem
+                key="edit"
+                icon={<Edit />}
+                label="Editar"
+                onClick={() => handleEdit(params.id as number, pois)}
+              />,
+              <GridActionsCellItem
+                key="delete"
+                icon={<Delete />}
+                label="Eliminar"
+                onClick={() => handleDelete(params.id as number)}
+              />,
+            ] : undefined,
+          }))}
           loading={isLoading}
           pageSizeOptions={[25, 50, 100]}
           initialState={{
@@ -140,13 +207,35 @@ export default function Pois() {
           disableRowSelectionOnClick
           localeText={{
             noRowsLabel: 'Nenhum POI encontrado',
-            footerRowSelected: (count) =>
+            footerRowSelected: (count: any) =>
               count !== 1
                 ? `${count.toLocaleString()} linhas selecionadas`
                 : `${count.toLocaleString()} linha selecionada`,
           }}
         />
       </Paper>
+
+      {/* Formulário de criação/edição */}
+      <PoiForm
+        open={formOpen}
+        onClose={handleCloseForm}
+        poi={editingPoi}
+      />
+
+      {/* Snackbar para feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
