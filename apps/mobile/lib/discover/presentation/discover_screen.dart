@@ -347,9 +347,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
-          // TODO: Navegar para tela de detalhes
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Detalhes de ${poi.nome} - Em breve!')),
+          // Navegar para tela de detalhes
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PoiDetailsScreen(poi: poi),
+            ),
           );
         },
         borderRadius: BorderRadius.circular(12),

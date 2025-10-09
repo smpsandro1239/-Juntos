@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../discover/presentation/discover_screen.dart';
+import '../../discover/presentation/details/poi_details_screen.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 
 part 'app_router.g.dart';
@@ -27,6 +28,15 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/discover',
         name: 'discover',
         builder: (context, state) => const DiscoverScreen(),
+      ),
+      GoRoute(
+        path: '/poi/:id',
+        name: 'poi_details',
+        builder: (context, state) {
+          final poiId = int.tryParse(state.pathParameters['id'] ?? '');
+          // TODO: Carregar POI por ID ou passar via extra
+          return const DiscoverScreen(); // Placeholder
+        },
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
