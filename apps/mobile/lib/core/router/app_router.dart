@@ -10,6 +10,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../discover/presentation/discover_screen.dart';
 import '../../discover/presentation/details/poi_details_screen.dart';
+import '../../discover/presentation/map/map_screen.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 
 part 'app_router.g.dart';
@@ -49,9 +50,7 @@ GoRouter appRouter(AppRouterRef ref) {
           GoRoute(
             path: '/map',
             name: 'map',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('Mapa - Em breve')),
-            ),
+            builder: (context, state) => const MapScreen(),
           ),
           GoRoute(
             path: '/favorites',
