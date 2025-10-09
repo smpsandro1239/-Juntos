@@ -7,6 +7,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/poi_service.dart';
+import '../../data/local/database/app_database.dart';
+import '../../data/repositories/favorites_repository.dart';
 import '../network/api_client.dart';
 
 // Provider do cliente API
@@ -24,6 +26,17 @@ final authServiceProvider = Provider<AuthService>((ref) {
 final poiServiceProvider = Provider<PoiService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return PoiService(apiClient);
+});
+
+// Provider para banco de dados local
+final appDatabaseProvider = Provider<AppDatabase>((ref) {
+  return AppDatabase();
+});
+
+// Provider para repositório de favoritos
+final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return FavoritesRepository(database);
 });
 
 // Provider para estado de autenticação

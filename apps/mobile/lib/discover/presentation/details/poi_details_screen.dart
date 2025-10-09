@@ -24,7 +24,6 @@ class PoiDetailsScreen extends ConsumerStatefulWidget {
 
 class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
   late Poi _poi;
-  bool _isFavorite = false; // TODO: Implementar verificação real de favoritos
 
   @override
   void initState() {
@@ -49,21 +48,33 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
     }
   }
 
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
+  void _toggleFavorite() async {
+    final favoritesRepository = ref.read(favoritesRepositoryProvider);
 
-    // TODO: Implementar chamada para API de favoritos
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isFavorite
-              ? 'Adicionado aos favoritos!'
-              : 'Removido dos favoritos!'
+    try {
+      final isNowFavorite = await favoritesRepository.toggleFavorite(_poi);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isNowFavorite
+                ? '${_poi.nome} adicionado aos favoritos!'
+                : '${_poi.nome} removido dos favoritos!'
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao gerir favoritos: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _sharePoi() {
@@ -146,12 +157,18 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
               ),
             ),
             actions: [
-              IconButton(
-                onPressed: _toggleFavorite,
-                icon: Icon(
-                  _isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: _isFavorite ? Colors.red : Colors.white,
-                ),
+              StreamBuilder<bool>(
+                stream: ref.watch(favoritesRepositoryProvider).watchIsFavorite(_poi.id!),
+                builder: (context, snapshot) {
+                  final isFavorite = snapshot.data ?? false;
+                  return IconButton(
+                    onPressed: _toggleFavorite,
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                    ),
+                  );
+                },
               ),
               IconButton(
                 onPressed: _sharePoi,

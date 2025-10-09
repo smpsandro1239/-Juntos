@@ -406,14 +406,44 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  // TODO: Implementar sistema de favoritos
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Sistema de favoritos - Em breve!')),
+              StreamBuilder<bool>(
+                stream: ref.watch(favoritesRepositoryProvider).watchIsFavorite(_pois[index].id!),
+                builder: (context, snapshot) {
+                  final isFavorite = snapshot.data ?? false;
+                  return IconButton(
+                    onPressed: () async {
+                      final favoritesRepository = ref.read(favoritesRepositoryProvider);
+                      try {
+                        final isNowFavorite = await favoritesRepository.toggleFavorite(_pois[index]);
+
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isNowFavorite
+                                  ? '${_pois[index].nome} adicionado aos favoritos!'
+                                  : '${_pois[index].nome} removido dos favoritos!'
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erro ao gerir favoritos: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : null,
+                    ),
                   );
                 },
-                icon: const Icon(Icons.favorite_border),
               ),
             ],
           ),

@@ -11,6 +11,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../discover/presentation/discover_screen.dart';
 import '../../discover/presentation/details/poi_details_screen.dart';
 import '../../discover/presentation/map/map_screen.dart';
+import '../../favorites/presentation/favorites_screen.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 
 part 'app_router.g.dart';
@@ -55,9 +56,7 @@ GoRouter appRouter(AppRouterRef ref) {
           GoRoute(
             path: '/favorites',
             name: 'favorites',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('Favoritos - Em breve')),
-            ),
+            builder: (context, state) => const FavoritesScreen(),
           ),
           GoRoute(
             path: '/profile',
