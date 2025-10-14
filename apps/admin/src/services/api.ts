@@ -70,6 +70,14 @@ export interface Poi {
   ativo: boolean;
 }
 
+export interface PaginatedResult<T> {
+  items: T[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface Event {
   id?: number;
   nome: string;
@@ -94,6 +102,7 @@ export interface Event {
 // Funções da API
 export const poisApi = {
   getAll: () => apiClient.get<Poi[]>('/pois'),
+  getPaginated: (page: number, size: number) => apiClient.get<PaginatedResult<Poi>>(`/pois/paginated?page=${page}&size=${size}`),
   getById: (id: number) => apiClient.get<Poi>(`/pois/${id}`),
   create: (poi: Omit<Poi, 'id'>) => apiClient.post<Poi>('/pois', poi),
   update: (id: number, poi: Partial<Poi>) => apiClient.put<Poi>(`/pois/${id}`, poi),

@@ -12,7 +12,7 @@ import pt.juntos.core.domain.Poi
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-interface PoiRepository : ReactiveCrudRepository<Poi, Long> {
+interface PoiRepository : ReactiveCrudRepository<Poi, Long>, PoiCustomRepository {
     
     @Query("""
         SELECT * FROM pois 
@@ -45,4 +45,12 @@ interface PoiRepository : ReactiveCrudRepository<Poi, Long> {
     
     @Query("SELECT COUNT(*) FROM pois WHERE ativo = true")
     fun countActive(): Mono<Long>
+
+    @Query("""
+        SELECT * FROM pois
+        WHERE ativo = true
+        ORDER BY nome
+        LIMIT :limit OFFSET :offset
+    """)
+    fun findActivePaginated(limit: Int, offset: Int): Flux<Poi>
 }
