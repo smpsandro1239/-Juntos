@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import java.time.Duration
+import io.micrometer.core.instrument.MeterRegistry
 
 @RestController
 @RequestMapping("/v1/pois")
@@ -25,7 +26,8 @@ import java.time.Duration
 class PoiController(
     private val poiRepository: PoiRepository,
     private val redisTemplate: ReactiveRedisTemplate<String, String>,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val meterRegistry: MeterRegistry
 ) {
 
     @GetMapping
@@ -106,6 +108,7 @@ class PoiController(
 
         return cached.flatMap { str ->
             try {
+                meterRegistry.counter("cache.pois.hits").increment()
                 val result = objectMapper.readValue(str, PaginatedResult::class.java) as PaginatedResult<Poi>
                 ResponseEntity.ok(result).toMono()
             } catch (ex: Exception) {
@@ -123,6 +126,7 @@ class PoiController(
                 val totalPages = if (total == 0L) 0 else ((total + validatedSize - 1) / validatedSize).toInt()
                 val result = PaginatedResult(items, validatedPage, validatedSize, total, totalPages)
                 try {
+                    meterRegistry.counter("cache.pois.misses").increment()
                     val json = objectMapper.writeValueAsString(result)
                     redisTemplate.opsForValue().set(cacheKey, json, Duration.ofSeconds(60)).subscribe()
                 } catch (ex: Exception) {
@@ -134,17 +138,30 @@ class PoiController(
     }
 
     private fun invalidatePoisCache(): Mono<Boolean> {
-        // For simplicity just clear keys with prefix pois:paginated:*
+        // Default: clear all paginated keys
         return redisTemplate.keys("pois:paginated:*")
             .flatMap { key -> redisTemplate.delete(key) }
             .then(Mono.just(true))
+    }
+
+    private fun invalidateCacheByCategory(categoria: String?): Mono<Boolean> {
+        if (categoria.isNullOrBlank()) return Mono.just(false)
+        val pattern = "pois:paginated:*:cat=${categoria}:*"
+        return redisTemplate.keys(pattern).flatMap { k -> redisTemplate.delete(k) }.then(Mono.just(true))
+    }
+
+    private fun invalidateCacheByPoi(poi: Poi): Mono<Boolean> {
+        // Simple strategy: invalidate by category and by any paginated queries with lat/lng present
+        val byCat = invalidateCacheByCategory(poi.categoria)
+        val byGeo = redisTemplate.keys("pois:paginated:*:lat=*").flatMap { k -> redisTemplate.delete(k) }.then(Mono.just(true))
+        return Mono.zip(byCat, byGeo).map { true }
     }
 
     @PostMapping
     fun createPoi(@RequestBody poi: Poi): Mono<ResponseEntity<Poi>> {
         return poiRepository.save(poi)
             .flatMap { saved ->
-                invalidatePoisCache().thenReturn(ResponseEntity.ok(saved))
+                invalidateCacheByPoi(saved).thenReturn(ResponseEntity.ok(saved))
             }
     }
 
@@ -161,7 +178,7 @@ class PoiController(
                 )
                 poiRepository.save(updated)
             }
-            .flatMap { saved -> invalidatePoisCache().thenReturn(ResponseEntity.ok(saved)) }
+        .flatMap { saved -> invalidateCacheByPoi(saved).thenReturn(ResponseEntity.ok(saved)) }
             .defaultIfEmpty(ResponseEntity.notFound().build())
     }
 
@@ -169,7 +186,7 @@ class PoiController(
     fun deletePoi(@PathVariable id: Long): Mono<ResponseEntity<Void>> {
         return poiRepository.findById(id)
             .flatMap { existing ->
-                poiRepository.delete(existing).then(invalidatePoisCache()).thenReturn(ResponseEntity.noContent().build<Void>())
+                poiRepository.delete(existing).then(invalidateCacheByPoi(existing)).thenReturn(ResponseEntity.noContent().build<Void>())
             }
             .defaultIfEmpty(ResponseEntity.notFound().build())
     }

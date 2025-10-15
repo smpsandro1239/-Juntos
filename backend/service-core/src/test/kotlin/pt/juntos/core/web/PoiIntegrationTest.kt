@@ -135,4 +135,24 @@ class PoiIntegrationTest {
             .expectBody()
             .jsonPath("$.total").isEqualTo(2)
     }
+
+    @Test
+    fun `ordenacao por distancia retorna mais proximo primeiro`() {
+        // fazer request com lat/lng perto de Parque A (38.7223,-9.1393)
+        client.get().uri("/v1/pois/paginated?page=0&size=10&lat=38.7223&lng=-9.1393")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.items[0].nome").isEqualTo("Parque A")
+    }
+
+    @Test
+    fun `combinacao de filtros retorna corretamente`() {
+        client.get().uri("/v1/pois/paginated?page=0&size=10&q=Centro&categoria=Cultura&idadeMin=5&idadeMax=16")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.items.length()").isEqualTo(1)
+            .jsonPath("$.items[0].nome").isEqualTo("Centro C")
+    }
 }
