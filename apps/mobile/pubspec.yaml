@@ -53,6 +53,7 @@ dependencies:
   equatable: ^2.0.5
   uuid: ^4.3.3
   shared_preferences: ^2.2.2
+  weather: ^3.2.1
 
 dev_dependencies:
   flutter_test:

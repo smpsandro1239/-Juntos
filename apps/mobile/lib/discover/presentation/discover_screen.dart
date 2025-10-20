@@ -16,8 +16,10 @@ import 'details/poi_details_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../data/services/weather_service.dart';
 import 'providers/filter_provider.dart';
 import 'widgets/poi_card_placeholder.dart';
+import 'package:weather/weather.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
@@ -33,6 +35,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   List<Poi> _pois = [];
   bool _isLoading = false;
   String? _errorMessage;
+  Weather? _currentWeather;
 
   // Filtros atuais
   int _idadeMin = 0;
@@ -42,9 +45,30 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   @override
   void initState() {
     super.initState();
-    _loadNearbyPois();
+    _loadInitialData();
   }
 
+  Future<void> _loadInitialData() async {
+    // Carrega POIs e dados de clima em paralelo
+    await Future.wait([
+      _loadNearbyPois(),
+      _loadWeatherData(),
+    ]);
+  }
+
+  // Carregar dados de clima
+  Future<void> _loadWeatherData() async {
+    final weatherService = ref.read(weatherServiceProvider);
+    // Usar a mesma localização fallback de Lisboa
+    const double lisboaLat = 38.7223;
+    const double lisboaLng = -9.1393;
+    final weather = await weatherService.getCurrentWeather(lisboaLat, lisboaLng);
+    if (mounted) {
+      setState(() {
+        _currentWeather = weather;
+      });
+    }
+  }
 
   // Carregar POIs próximos (Lisboa como localização padrão)
   Future<void> _loadNearbyPois() async {
@@ -60,18 +84,31 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       const double lisboaLat = 38.7223;
       const double lisboaLng = -9.1393;
 
-      final pois = await poiService.findNearby(
+      var pois = await poiService.findNearby(
         latitude: lisboaLat,
         longitude: lisboaLng,
         idadeMin: _idadeMin,
         idadeMax: _idadeMax,
-        limite: 20,
+        limite: 100, // Obter mais resultados para ter uma boa base para o algoritmo
       );
 
-      setState(() {
-        _pois = pois;
-        _isLoading = false;
-      });
+      // Aplicar o algoritmo "Momento"
+      final recommendationService = ref.read(recommendationServiceProvider);
+      final filterState = await ref.read(filterNotifierProvider.future);
+      pois = await recommendationService.sortPois(
+        pois,
+        userLat: lisboaLat,
+        userLng: lisboaLng,
+        weather: _currentWeather,
+        ageRanges: filterState.ageRanges,
+      );
+
+      if (mounted) {
+        setState(() {
+          _pois = pois;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
@@ -326,10 +363,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
 
   Widget _buildPoiCard(Poi poi) {
     final cacheManager = ref.watch(imageCacheManagerProvider);
+    final database = ref.read(appDatabaseProvider);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
+          // Registar o clique no histórico
+          database.clickHistoryDao.addClick(poi.id!);
+
           // Navegar para tela de detalhes
           Navigator.of(context).push(
             MaterialPageRoute(

@@ -9,7 +9,14 @@ import '../../data/services/auth_service.dart';
 import '../../data/services/poi_service.dart';
 import '../../data/local/database/app_database.dart';
 import '../../data/repositories/favorites_repository.dart';
+import '../../domain/services/recommendation_service.dart';
 import '../network/api_client.dart';
+
+// Provider para o serviço de recomendação
+final recommendationServiceProvider = Provider<RecommendationService>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return RecommendationService(database);
+});
 
 // Provider do cliente API
 final apiClientProvider = Provider<ApiClient>((ref) {
