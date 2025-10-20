@@ -13,25 +13,29 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:drift/native.dart';
 import '../models/favorite.dart';
 import '../models/click_history.dart';
+import '../models/cached_poi.dart';
 import '../daos/favorites_dao.dart';
 import '../daos/click_history_dao.dart';
+import '../daos/cached_pois_dao.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Favorites, ClickHistory], daos: [FavoritesDao, ClickHistoryDao])
+@DriftDatabase(tables: [Favorites, ClickHistory, CachedPois], daos: [FavoritesDao, ClickHistoryDao, CachedPoisDao])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2; // Incrementar a versão do esquema devido à nova tabela
+  int get schemaVersion => 3; // Incrementar a versão do esquema devido à nova tabela
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
       if (from < 2) {
-        // Adicionar a tabela clickHistory na migração
         await m.createTable(clickHistory);
+      }
+      if (from < 3) {
+        await m.createTable(cachedPois);
       }
     },
   );

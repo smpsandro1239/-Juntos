@@ -12,6 +12,7 @@ import '../../core/providers/image_cache_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
 import '../../data/models/poi.dart';
+import '../../data/local/database/app_database.dart';
 import 'details/poi_details_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shimmer/shimmer.dart';
@@ -77,20 +78,23 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       _errorMessage = null;
     });
 
+    final database = ref.read(appDatabaseProvider);
+    const double lisboaLat = 38.7223;
+    const double lisboaLng = -9.1393;
+
     try {
+      // 1. Tentar obter dados da API
       final poiService = ref.read(poiServiceProvider);
-
-      // Coordenadas de Lisboa como fallback
-      const double lisboaLat = 38.7223;
-      const double lisboaLng = -9.1393;
-
       var pois = await poiService.findNearby(
         latitude: lisboaLat,
         longitude: lisboaLng,
         idadeMin: _idadeMin,
         idadeMax: _idadeMax,
-        limite: 100, // Obter mais resultados para ter uma boa base para o algoritmo
+        limite: 100,
       );
+
+      // 2. Guardar em cache se for bem-sucedido
+      await database.cachedPoisDao.replaceCachedPois(pois);
 
       // Aplicar o algoritmo "Momento"
       final recommendationService = ref.read(recommendationServiceProvider);
@@ -110,11 +114,60 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      // 3. Em caso de erro (offline), fazer fallback para a cache
+      final cached = await database.cachedPoisDao.getAllCachedPois();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Modo offline: a mostrar as últimas atividades guardadas.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+
+        final poisFromCache = cached.map((cp) => _cachedPoiToPoi(cp)).toList();
+
+        // TODO: Ordenar por distância
+
+        setState(() {
+          _pois = poisFromCache;
+          _isLoading = false;
+          // Não mostrar um erro, pois temos dados da cache
+        });
+      }
     }
+  }
+
+  // Converte um CachedPoi para um Poi
+  Poi _cachedPoiToPoi(CachedPoi cached) {
+    return Poi(
+      id: cached.poiId,
+      nome: cached.nome,
+      descricao: cached.descricao,
+      categoria: cached.categoria,
+      idadeMin: cached.idadeMin,
+      idadeMax: cached.idadeMax,
+      precoMin: cached.precoMin,
+      precoMax: cached.precoMax,
+      latitude: cached.latitude,
+      longitude: cached.longitude,
+      morada: cached.morada,
+      codigoPostal: cached.codigoPostal,
+      cidade: cached.cidade,
+      distrito: cached.distrito,
+      telefone: cached.telefone,
+      website: cached.website,
+      email: cached.email,
+      horarioAbertura: cached.horarioAbertura,
+      horarioFecho: cached.horarioFecho,
+      acessibilidade: cached.acessibilidade,
+      estacionamento: cached.estacionamento,
+      wc: cached.wc,
+      cafetaria: cached.cafetaria,
+      interior: cached.interior,
+      exterior: cached.exterior,
+      fotos: cached.fotos,
+      ativo: true, // Assumir ativo se estiver em cache
+    );
   }
 
   // Pesquisar POIs
