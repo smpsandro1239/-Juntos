@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/providers/image_cache_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
@@ -21,6 +22,8 @@ import '../../data/services/weather_service.dart';
 import 'providers/filter_provider.dart';
 import 'widgets/poi_card_placeholder.dart';
 import 'package:weather/weather.dart';
+import '../../data/models/partner_ad.dart';
+import 'widgets/partner_ad_card.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
@@ -168,6 +171,24 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       fotos: cached.fotos,
       ativo: true, // Assumir ativo se estiver em cache
     );
+  }
+
+  // Abrir URL do parceiro com tracking
+  Future<void> _launchPartnerUrl(String url) async {
+    final uri = Uri.parse(url).replace(queryParameters: {
+      ...Uri.parse(url).queryParameters,
+      'utm_source': 'juntos_app',
+    });
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Não foi possível abrir o link: $url')),
+        );
+      }
+    }
   }
 
   // Pesquisar POIs
@@ -372,12 +393,32 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       );
     }
 
+    const adInterval = 15;
+    final adCount = (_pois.length / adInterval).floor();
+    final totalItemCount = _pois.length + adCount;
+
     return RefreshIndicator(
-      onRefresh: _loadNearbyPois,
+      onRefresh: _loadInitialData,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _pois.length,
-        itemBuilder: (context, index) => _buildPoiCard(_pois[index]),
+        itemCount: totalItemCount,
+        itemBuilder: (context, index) {
+          // Verifica se a posição é para um anúncio
+          if (adInterval > 0 && (index + 1) % (adInterval + 1) == 0) {
+            return PartnerAdCard(
+              ad: PartnerAd.mockAd,
+              onTap: () => _launchPartnerUrl(PartnerAd.mockAd.destinationUrl),
+            );
+          }
+
+          // Ajusta o índice para aceder à lista de POIs
+          final poiIndex = index - (index / (adInterval + 1)).floor();
+          if (poiIndex < _pois.length) {
+            return _buildPoiCard(_pois[poiIndex]);
+          }
+
+          return null; // Não deve acontecer
+        },
       ),
     );
   }
