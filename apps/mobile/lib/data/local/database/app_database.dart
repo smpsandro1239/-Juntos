@@ -1,73 +1,42 @@
 // +JUNTOS
 // Ficheiro: lib/data/local/database/app_database.dart
 // Descrição: Configuração do banco de dados Drift SQLite
-// Autor: (+JUNTOS team)
+// Autor: Jules
 // Locale: pt_PT
 
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:drift/native.dart';
 import '../models/favorite.dart';
+import '../daos/favorites_dao.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Favorites])
+@DriftDatabase(tables: [Favorites], daos: [FavoritesDao])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => 1;
-
-  @override
-  MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) async {
-      await m.createAll();
-    },
-    onUpgrade: (Migrator m, int from, int to) async {
-      // Estratégia de migração futura
-      // await m.createAll(); // Para desenvolvimento
-    },
-  );
-
-  // Queries para favoritos
-  Future<List<Favorite>> getAllFavorites() => select(favorites).get();
-
-  Future<Favorite?> getFavoriteByPoiId(int poiId) {
-    return (select(favorites)..where((f) => f.poiId.equals(poiId))).getSingleOrNull();
-  }
-
-  Future<bool> isFavorite(int poiId) async {
-    final favorite = await getFavoriteByPoiId(poiId);
-    return favorite != null;
-  }
-
-  Future<int> addFavorite(FavoritesCompanion favorite) {
-    return into(favorites).insert(favorite);
-  }
-
-  Future<bool> removeFavorite(int poiId) {
-    return (delete(favorites)..where((f) => f.poiId.equals(poiId))).go().then((rows) => rows > 0);
-  }
-
-  Future<int> removeAllFavorites() {
-    return delete(favorites).go();
-  }
-
-  Stream<List<Favorite>> watchAllFavorites() {
-    return select(favorites).watch();
-  }
-
-  Stream<bool> watchIsFavorite(int poiId) {
-    final query = select(favorites)..where((f) => f.poiId.equals(poiId));
-    return query.watch().map((favorites) => favorites.isNotEmpty);
-  }
 }
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File('${dbFolder.path}/juntos.db');
-    return NativeDatabase(file);
+    final file = File(p.join(dbFolder.path, 'juntos.db'));
+
+    // Also work around limitations on old Android versions
+    if (Platform.isAndroid) {
+      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+    }
+
+    final cachebase = (await getTemporaryDirectory()).path;
+    sqlite3.tempDirectory = cachebase;
+
+    return NativeDatabase.createInBackground(file);
   });
 }

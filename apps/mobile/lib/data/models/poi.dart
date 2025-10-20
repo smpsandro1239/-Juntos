@@ -36,6 +36,7 @@ class Poi extends Equatable {
   final bool cafetaria;
   final bool interior;
   final bool exterior;
+  final List<String>? fotos; // Adicionado campo para fotos
   final bool ativo;
   final DateTime? criadoEm;
   final DateTime? atualizadoEm;
@@ -66,6 +67,7 @@ class Poi extends Equatable {
     required this.cafetaria,
     required this.interior,
     required this.exterior,
+    this.fotos,
     required this.ativo,
     this.criadoEm,
     this.atualizadoEm,
@@ -96,6 +98,6 @@ class Poi extends Equatable {
     codigoPostal, cidade, distrito, telefone, website,
     email, horarioAbertura, horarioFecho, acessibilidade,
     estacionamento, wc, cafetaria, interior, exterior,
-    ativo, criadoEm, atualizadoEm
+    fotos, ativo, criadoEm, atualizadoEm
   ];
 }

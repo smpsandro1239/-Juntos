@@ -12,19 +12,31 @@ import '../../discover/presentation/discover_screen.dart';
 import '../../discover/presentation/details/poi_details_screen.dart';
 import '../../discover/presentation/map/map_screen.dart';
 import '../../favorites/presentation/favorites_screen.dart';
-import '../../onboarding/presentation/onboarding_screen.dart';
+import '../../onboarding/onboarding_screen_1.dart';
+import '../../onboarding/onboarding_screen_2.dart';
+import '../../onboarding/onboarding_screen_3.dart';
 
 part 'app_router.g.dart';
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
   return GoRouter(
-    initialLocation: '/onboarding',
+    initialLocation: '/onboarding/1',
     routes: [
       GoRoute(
-        path: '/onboarding',
-        name: 'onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        path: '/onboarding/1',
+        name: 'onboarding1',
+        builder: (context, state) => const OnboardingScreen1(),
+      ),
+       GoRoute(
+        path: '/onboarding/2',
+        name: 'onboarding2',
+        builder: (context, state) => const OnboardingScreen2(),
+      ),
+       GoRoute(
+        path: '/onboarding/3',
+        name: 'onboarding3',
+        builder: (context, state) => const OnboardingScreen3(),
       ),
       GoRoute(
         path: '/discover',

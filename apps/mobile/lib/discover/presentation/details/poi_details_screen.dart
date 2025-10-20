@@ -4,6 +4,7 @@
 // Autor: (+JUNTOS team)
 // Locale: pt_PT
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -136,25 +137,35 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
                   ],
                 ),
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      theme.primaryColor,
-                      theme.primaryColor.withOpacity(0.7),
-                    ],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (_poi.fotos != null && _poi.fotos!.isNotEmpty)
+                    CachedNetworkImage(
+                      imageUrl: _poi.fotos!.first,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                    )
+                  else
+                    Container(color: Colors.grey), // Placeholder
+                  // Gradiente para escurecer a imagem e garantir legibilidade do título
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black54],
+                        stops: [0.6, 1.0],
+                      ),
+                    ),
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.image,
-                    size: 80,
-                    color: Colors.white54,
-                  ),
-                ),
+                ],
               ),
+              stretchModes: const [
+                StretchMode.zoomBackground,
+                StretchMode.blurBackground,
+                StretchMode.fadeTitle,
+              ],
             ),
             actions: [
               StreamBuilder<bool>(
@@ -162,6 +173,7 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
                 builder: (context, snapshot) {
                   final isFavorite = snapshot.data ?? false;
                   return IconButton(
+                    tooltip: isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
                     onPressed: _toggleFavorite,
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -171,6 +183,7 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
                 },
               ),
               IconButton(
+                tooltip: 'Partilhar atividade',
                 onPressed: _sharePoi,
                 icon: const Icon(Icons.share, color: Colors.white),
               ),

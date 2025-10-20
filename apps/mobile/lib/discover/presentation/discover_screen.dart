@@ -4,11 +4,20 @@
 // Autor: (+JUNTOS team)
 // Locale: pt_PT
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/image_cache_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
 import '../../data/models/poi.dart';
+import 'details/poi_details_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../core/widgets/empty_state.dart';
+import 'providers/filter_provider.dart';
+import 'widgets/poi_card_placeholder.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
@@ -127,6 +136,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final filterStateAsync = ref.watch(filterNotifierProvider);
+    final filterNotifier = ref.read(filterNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -161,15 +172,42 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           // Filtros rápidos
           SizedBox(
             height: 50,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _buildFilterChip(l10n.gratis, Icons.money_off),
-                _buildFilterChip(l10n.interior, Icons.home),
-                _buildFilterChip(l10n.exterior, Icons.park),
-                _buildFilterChip(l10n.acessivel, Icons.accessible),
-              ],
+            child: filterStateAsync.when(
+              data: (filterState) => ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  FilterChip(
+                    label: Text(l10n.gratis),
+                    avatar: const Icon(Icons.money_off),
+                    selected: filterState.isFree ?? false,
+                    onSelected: (_) => filterNotifier.toggleFree(),
+                  ),
+                  const SizedBox(width: 8),
+                  FilterChip(
+                    label: Text(l10n.interior),
+                    avatar: const Icon(Icons.home),
+                    selected: filterState.isIndoor == true,
+                    onSelected: (_) => filterNotifier.toggleIndoor(),
+                  ),
+                  const SizedBox(width: 8),
+                  FilterChip(
+                    label: Text(l10n.exterior),
+                    avatar: const Icon(Icons.park),
+                    selected: filterState.isIndoor == false,
+                    onSelected: (_) => filterNotifier.toggleOutdoor(),
+                  ),
+                  const SizedBox(width: 8),
+                  FilterChip(
+                    label: Text(l10n.acessivel),
+                    avatar: const Icon(Icons.accessible),
+                    selected: filterState.hasAccessibility ?? false,
+                    onSelected: (_) => filterNotifier.toggleAccessibility(),
+                  ),
+                ],
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => const Center(child: Text('Erro ao carregar filtros')),
             ),
           ),
 
@@ -198,7 +236,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _buildCategoryCard(l10n.parques, Icons.playground_outlined, Colors.green, 'Parque'),
+                _buildCategoryCard(l10n.parques, Icons.outdoor_grill, Colors.green, 'Parque'),
                 _buildCategoryCard(l10n.museus, Icons.museum_outlined, Colors.purple, 'Museu'),
                 _buildCategoryCard(l10n.praias, Icons.beach_access_outlined, Colors.blue, 'Praia'),
                 _buildCategoryCard(l10n.trilhos, Icons.hiking_outlined, Colors.brown, 'Trilho'),
@@ -218,85 +256,29 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16),
-            const SizedBox(width: 4),
-            Text(label),
-          ],
-        ),
-        onSelected: (selected) {
-          // TODO: Implementar filtro
-        },
-      ),
-    );
-  }
-
   Widget _buildPoiList() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: 5,
+        itemBuilder: (context, index) => const PoiCardPlaceholder(),
       );
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Erro ao carregar POIs',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadNearbyPois,
-              child: const Text('Tentar novamente'),
-            ),
-          ],
-        ),
+      return EmptyStateWidget(
+        lottieAsset: 'assets/lottie/error.json',
+        title: 'Erro de Ligação',
+        message: 'Não foi possível carregar as atividades. Verifica a tua ligação à internet e tenta novamente.',
+        onRetry: _loadNearbyPois,
       );
     }
 
     if (_pois.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.search_off,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nenhum POI encontrado',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tente ajustar os filtros ou pesquisar por outro termo',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        lottieAsset: 'assets/lottie/empty_search.json',
+        title: 'Nenhuma atividade encontrada',
+        message: 'Parece que não há nada por aqui. Tenta alargar a tua pesquisa ou ajustar os filtros.',
       );
     }
 
@@ -343,6 +325,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildPoiCard(Poi poi) {
+    final cacheManager = ref.watch(imageCacheManagerProvider);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -359,14 +342,31 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Container(
+              SizedBox(
                 width: 60,
                 height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
+                  child: (poi.fotos != null && poi.fotos!.isNotEmpty)
+                      ? CachedNetworkImage(
+                          cacheManager: cacheManager,
+                          imageUrl: poi.fotos!.first,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(color: Colors.white),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.error, color: Colors.red),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image, color: Colors.grey),
+                        ),
                 ),
-                child: const Icon(Icons.image, color: Colors.grey),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -407,14 +407,18 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
               ),
               StreamBuilder<bool>(
-                stream: ref.watch(favoritesRepositoryProvider).watchIsFavorite(_pois[index].id!),
+                stream: ref.watch(favoritesRepositoryProvider).watchIsFavorite(poi.id!),
                 builder: (context, snapshot) {
                   final isFavorite = snapshot.data ?? false;
                   return IconButton(
+                    tooltip: isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
                     onPressed: () async {
+                      // 1. Dar feedback tátil imediato
+                      HapticFeedback.lightImpact();
+
                       final favoritesRepository = ref.read(favoritesRepositoryProvider);
                       try {
-                        final isNowFavorite = await favoritesRepository.toggleFavorite(_pois[index]);
+                        final isNowFavorite = await favoritesRepository.toggleFavorite(poi);
 
                         if (!mounted) return;
 
@@ -422,9 +426,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                           SnackBar(
                             content: Text(
                               isNowFavorite
-                                  ? '${_pois[index].nome} adicionado aos favoritos!'
-                                  : '${_pois[index].nome} removido dos favoritos!'
+                                  ? '${poi.nome} adicionado aos favoritos!'
+                                  : '${poi.nome} removido dos favoritos!'
                             ),
+                            duration: const Duration(seconds: 1),
                           ),
                         );
                       } catch (e) {
@@ -438,9 +443,20 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                         );
                       }
                     },
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : null,
+                    // 2. Animar a mudança do ícone
+                    icon: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        );
+                      },
+                      child: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : null,
+                        key: ValueKey<bool>(isFavorite), // Essencial para o AnimatedSwitcher
+                      ),
                     ),
                   );
                 },

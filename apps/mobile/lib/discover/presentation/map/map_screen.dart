@@ -7,7 +7,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../data/models/poi.dart';
 import '../../../core/providers/api_provider.dart';
@@ -20,17 +20,13 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen> {
-  MapboxMapController? _mapController;
+  MapLibreMapController? _mapController;
   List<Poi> _pois = [];
   bool _isLoading = true;
   String? _errorMessage;
 
   // Coordenadas iniciais (Lisboa)
   static const LatLng _initialPosition = LatLng(38.7223, -9.1393);
-
-  // Mapbox access token (deve vir de configuração segura)
-  // TODO: Implementar leitura de configuração segura
-  static const String _mapboxAccessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGV4YW1wbGUifQ.example';
 
   @override
   void initState() {
@@ -100,8 +96,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  void _onMapCreated(MapboxMapController controller) {
+  void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
+    _mapController!.onSymbolTapped.add(_onSymbolTapped);
 
     // Configurar estilo do mapa
     controller.setSymbolIconAllowOverlap(true);
@@ -233,18 +230,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       body: Stack(
         children: [
-          // Mapa Mapbox
-          MapboxMap(
-            accessToken: _mapboxAccessToken,
+          // Mapa MapLibre
+          MapLibreMap(
             initialCameraPosition: CameraPosition(
               target: _initialPosition,
               zoom: 12.0,
             ),
             onMapCreated: _onMapCreated,
-            onSymbolTapped: _onSymbolTapped,
-            styleString: 'mapbox://styles/mapbox/streets-v12',
+            styleString: 'https://demotiles.maplibre.org/style.json',
             myLocationEnabled: true,
-            myLocationTrackingMode: MyLocationTrackingMode.Tracking,
+            myLocationTrackingMode: MyLocationTrackingMode.tracking,
           ),
 
           // Overlay de erro

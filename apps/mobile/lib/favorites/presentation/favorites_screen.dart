@@ -10,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
 import '../../discover/presentation/details/poi_details_screen.dart';
 import '../../data/models/poi.dart';
+import '../../data/local/database/app_database.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({super.key});
@@ -162,6 +163,17 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
             latitude: favorite.poiLatitude,
             longitude: favorite.poiLongitude,
             morada: favorite.poiAddress,
+            idadeMin: favorite.idadeMin,
+            idadeMax: favorite.idadeMax,
+            precoMin: favorite.precoMin,
+            precoMax: favorite.precoMax,
+            acessibilidade: favorite.acessibilidade,
+            estacionamento: favorite.estacionamento,
+            wc: favorite.wc,
+            cafetaria: favorite.cafetaria,
+            interior: favorite.interior,
+            exterior: favorite.exterior,
+            ativo: true, // Assumimos que o favorito está ativo
           );
 
           if (!mounted) return;
