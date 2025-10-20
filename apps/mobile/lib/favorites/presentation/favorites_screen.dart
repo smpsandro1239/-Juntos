@@ -6,10 +6,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
 import '../../discover/presentation/details/poi_details_screen.dart';
 import '../../data/models/poi.dart';
+import '../../data/local/database/app_database.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({super.key});
@@ -21,12 +22,12 @@ class FavoritesScreen extends ConsumerStatefulWidget {
 class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    // final l10n = AppLocalizations.of(context)!;
     final favoritesRepository = ref.watch(favoritesRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appTitle),
+        title: const Text("Favoritos"), // Text(l10n.appTitle),
         backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           StreamBuilder<List<Favorite>>(
@@ -162,6 +163,10 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
             latitude: favorite.poiLatitude,
             longitude: favorite.poiLongitude,
             morada: favorite.poiAddress,
+            idadeMin: 0, // Placeholder
+            idadeMax: 12, // Placeholder
+            precoMin: 0, // Placeholder
+            precoMax: 0, // Placeholder
           );
 
           if (!mounted) return;

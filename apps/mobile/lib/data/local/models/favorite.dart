@@ -19,9 +19,6 @@ class Favorites extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
-  Set<Column> get primaryKey => {id};
-
-  @override
   List<String> get customConstraints => [
     'UNIQUE(poi_id)', // Evitar duplicados
   ];

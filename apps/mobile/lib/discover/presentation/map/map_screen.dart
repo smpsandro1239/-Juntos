@@ -5,10 +5,11 @@
 // Locale: pt_PT
 
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../data/models/poi.dart';
 import '../../../core/providers/api_provider.dart';
 
@@ -20,17 +21,12 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen> {
-  MapboxMapController? _mapController;
+  MapLibreMapController? _mapController;
   List<Poi> _pois = [];
   bool _isLoading = true;
   String? _errorMessage;
 
-  // Coordenadas iniciais (Lisboa)
   static const LatLng _initialPosition = LatLng(38.7223, -9.1393);
-
-  // Mapbox access token (deve vir de configuração segura)
-  // TODO: Implementar leitura de configuração segura
-  static const String _mapboxAccessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGV4YW1wbGUifQ.example';
 
   @override
   void initState() {
@@ -55,7 +51,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       final pois = await poiService.findNearby(
         latitude: _initialPosition.latitude,
         longitude: _initialPosition.longitude,
-        raio: 10000, // 10km
+        raio: 10000,
         limite: 100,
       );
 
@@ -64,7 +60,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _isLoading = false;
       });
 
-      // Adicionar marcadores no mapa
       if (_mapController != null) {
         await _addPoiMarkers();
       }
@@ -79,49 +74,60 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Future<void> _addPoiMarkers() async {
     if (_mapController == null) return;
 
-    // Limpar marcadores existentes
     await _mapController!.clearSymbols();
 
-    // Adicionar marcadores para cada POI
     for (final poi in _pois) {
-      final symbolOptions = SymbolOptions(
-        geometry: LatLng(poi.latitude, poi.longitude),
-        iconImage: 'marker-15', // Ícone padrão do Mapbox
-        iconSize: 1.5,
-        textField: poi.nome,
-        textSize: 12.0,
-        textOffset: const Offset(0, 2),
-        textColor: '#000000',
-        textHaloColor: '#FFFFFF',
-        textHaloWidth: 1.0,
+      await _mapController!.addSymbol(
+        SymbolOptions(
+          geometry: LatLng(poi.latitude, poi.longitude),
+          iconImage: 'marker-15',
+          iconSize: 1.5,
+          textField: poi.nome,
+          textSize: 12.0,
+          textOffset: const Offset(0, 2),
+        ),
+        poi.toJson(),
       );
-
-      await _mapController!.addSymbol(symbolOptions, {'poi': poi.toJson()});
     }
   }
 
-  void _onMapCreated(MapboxMapController controller) {
+  void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
+    _mapController!.onFeatureTapped.add(_onFeatureTapped);
 
-    // Configurar estilo do mapa
-    controller.setSymbolIconAllowOverlap(true);
-    controller.setSymbolIconIgnorePlacement(true);
-
-    // Adicionar marcadores quando o mapa estiver pronto
     if (_pois.isNotEmpty) {
       _addPoiMarkers();
     }
   }
 
-  void _onSymbolTapped(Symbol symbol) {
-    // Obter dados do POI do marcador
-    final poiData = symbol.data?['poi'];
-    if (poiData != null) {
-      final poi = Poi.fromJson(poiData);
+  void _onFeatureTapped(dynamic id, Point<double> point, LatLng latlng, ) {
+    // A API do maplibre_gl retorna o `id` do feature, que é a geometria.
+    // O ideal seria ter uma forma de associar o `id` ao POI.
+    // Por agora, vamos procurar o POI mais próximo do ponto de toque.
+    Poi? tappedPoi;
+    double minDistance = double.infinity;
 
-      // Mostrar bottom sheet com detalhes do POI
-      _showPoiBottomSheet(poi);
+    for (final poi in _pois) {
+      final distance = _calculateDistance(latlng, LatLng(poi.latitude, poi.longitude));
+      if (distance < minDistance) {
+        minDistance = distance;
+        tappedPoi = poi;
+      }
     }
+
+    // Se o POI mais próximo estiver a uma distância razoável, mostra o bottom sheet.
+    if (tappedPoi != null && minDistance < 0.01) { // Threshold de tolerância
+      _showPoiBottomSheet(tappedPoi);
+    }
+  }
+
+  // Fórmula de Haversine simplificada para calcular distância
+  double _calculateDistance(LatLng p1, LatLng p2) {
+    final lat1 = p1.latitude;
+    final lon1 = p1.longitude;
+    final lat2 = p2.latitude;
+    final lon2 = p2.longitude;
+    return (lat1 - lat2).abs() + (lon1 - lon2).abs();
   }
 
   void _showPoiBottomSheet(Poi poi) {
@@ -159,20 +165,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.euro, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(
-                  poi.precoFormatado,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: poi.isGratis ? Colors.green : Theme.of(context).primaryColor,
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -180,21 +172,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      // TODO: Navegar para tela de detalhes
                     },
                     icon: const Icon(Icons.info),
                     label: const Text('Ver Detalhes'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      // TODO: Iniciar navegação
-                    },
-                    icon: const Icon(Icons.directions),
-                    label: const Text('Ir Até Aqui'),
                   ),
                 ),
               ],
@@ -207,11 +187,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    // final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appTitle),
+        title: const Text("Mapa de Atividades"), // Text(l10n.appTitle),
         backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           if (_isLoading)
@@ -233,21 +213,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       body: Stack(
         children: [
-          // Mapa Mapbox
-          MapboxMap(
-            accessToken: _mapboxAccessToken,
-            initialCameraPosition: CameraPosition(
+          MapLibreMap(
+            initialCameraPosition: const CameraPosition(
               target: _initialPosition,
               zoom: 12.0,
             ),
             onMapCreated: _onMapCreated,
-            onSymbolTapped: _onSymbolTapped,
-            styleString: 'mapbox://styles/mapbox/streets-v12',
+            styleString: 'https://demotiles.maplibre.org/style.json',
             myLocationEnabled: true,
             myLocationTrackingMode: MyLocationTrackingMode.Tracking,
           ),
-
-          // Overlay de erro
           if (_errorMessage != null)
             Positioned(
               top: 16,
@@ -280,20 +255,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ),
             ),
-
-          // Botão de localização atual
-          Positioned(
-            bottom: 100,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                _mapController?.animateCamera(
-                  CameraUpdate.newLatLng(_initialPosition),
-                );
-              },
-              child: const Icon(Icons.my_location),
-            ),
-          ),
         ],
       ),
     );

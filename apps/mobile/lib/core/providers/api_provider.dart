@@ -33,10 +33,16 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
+// Provider para o DAO de favoritos
+final favoritesDaoProvider = Provider<FavoritesDao>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return database.favoritesDao;
+});
+
 // Provider para repositório de favoritos
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
-  final database = ref.watch(appDatabaseProvider);
-  return FavoritesRepository(database);
+  final favoritesDao = ref.watch(favoritesDaoProvider);
+  return FavoritesRepository(favoritesDao);
 });
 
 // Provider para estado de autenticação
