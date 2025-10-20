@@ -7,9 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-// TODO: Definir os providers do onboarding
-// final onboardingStateProvider = StateNotifierProvider<...>(...);
+import 'providers/onboarding_provider.dart';
 
 class OnboardingScreen1 extends ConsumerStatefulWidget {
   const OnboardingScreen1({super.key});
@@ -84,7 +82,7 @@ class _OnboardingScreen1State extends ConsumerState<OnboardingScreen1> {
               // 3. Botões de Ação
               ElevatedButton(
                 onPressed: _selectedAges.isNotEmpty ? () {
-                  // TODO: Guardar idades no provider
+                  ref.read(onboardingNotifierProvider.notifier).setAgeRanges(_selectedAges);
                   context.go('/onboarding/2');
                 } : null, // Desativado se nenhuma idade for selecionada
                 style: ElevatedButton.styleFrom(
@@ -96,7 +94,7 @@ class _OnboardingScreen1State extends ConsumerState<OnboardingScreen1> {
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
-                  // TODO: Marcar como modo convidado
+                  ref.read(onboardingNotifierProvider.notifier).enterGuestMode();
                   context.go('/home');
                 },
                 child: const Text('Experimentar mais tarde'),

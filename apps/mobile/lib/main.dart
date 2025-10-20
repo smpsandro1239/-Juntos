@@ -8,14 +8,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/services/app_lifecycle_service.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  // Garantir que os bindings estão inicializados antes de chamar código nativo
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Gerir o arranque da sessão (e.g., pedido de ATT)
+  final prefs = await SharedPreferences.getInstance();
+  final appLifecycleService = AppLifecycleService(prefs);
+  await appLifecycleService.handleSessionStart();
+
   runApp(
-    const ProviderScope(
-      child: JuntosApp(),
+    ProviderScope(
+      overrides: [
+        // Se precisarmos do SharedPreferences noutros locais, podemos fornecê-lo aqui
+        // sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const JuntosApp(),
     ),
   );
 }

@@ -55,6 +55,7 @@ dependencies:
   shared_preferences: ^2.2.2
   weather: ^3.2.1
   url_launcher: ^6.1.10
+  app_tracking_transparency: ^2.0.6+1
 
 dev_dependencies:
   flutter_test:

@@ -7,9 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-// TODO: Definir os providers do onboarding
-// final onboardingStateProvider = StateNotifierProvider<...>(...);
+import 'providers/onboarding_provider.dart';
 
 class OnboardingScreen2 extends ConsumerStatefulWidget {
   const OnboardingScreen2({super.key});
@@ -87,7 +85,7 @@ class _OnboardingScreen2State extends ConsumerState<OnboardingScreen2> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // TODO: Guardar código-postal no provider
+                      ref.read(onboardingNotifierProvider.notifier).setPostalCode(_postalCodeController.text);
                       context.go('/onboarding/3');
                     }
                   },
@@ -100,7 +98,7 @@ class _OnboardingScreen2State extends ConsumerState<OnboardingScreen2> {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
-                    // TODO: Marcar como modo convidado
+                    ref.read(onboardingNotifierProvider.notifier).enterGuestMode();
                     context.go('/home');
                   },
                   child: const Text('Experimentar mais tarde'),

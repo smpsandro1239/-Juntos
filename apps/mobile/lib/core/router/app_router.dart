@@ -15,17 +15,23 @@ import '../../favorites/presentation/favorites_screen.dart';
 import '../../onboarding/onboarding_screen_1.dart';
 import '../../onboarding/onboarding_screen_2.dart';
 import '../../onboarding/onboarding_screen_3.dart';
+import '../presentation/splash_screen.dart';
 
 part 'app_router.g.dart';
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
   return GoRouter(
-    initialLocation: '/onboarding/1',
+    initialLocation: '/',
     routes: [
+       GoRoute(
+        path: '/',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
-        path: '/onboarding/1',
-        name: 'onboarding1',
+        path: '/onboarding',
+        name: 'onboarding',
         builder: (context, state) => const OnboardingScreen1(),
       ),
        GoRoute(

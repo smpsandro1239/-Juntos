@@ -54,5 +54,7 @@
 	<string>Usamos a câmara para que possa tirar fotos para os seus álbuns.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Usamos a galeria para que possa escolher fotos para os seus álbuns.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Ajuda-nos a mostrar apenas o que é relevante para ti.</string>
 </dict>
 </plist>

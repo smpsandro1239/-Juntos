@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'providers/onboarding_provider.dart';
 
 class OnboardingScreen3 extends ConsumerWidget {
   const OnboardingScreen3({super.key});
@@ -63,7 +64,7 @@ class OnboardingScreen3 extends ConsumerWidget {
               // 3. Botão de Ação
               ElevatedButton(
                 onPressed: () {
-                  // TODO: Marcar o onboarding como concluído
+                  ref.read(onboardingNotifierProvider.notifier).completeOnboarding();
                   context.go('/home');
                 },
                 style: ElevatedButton.styleFrom(
