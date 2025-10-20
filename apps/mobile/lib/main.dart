@@ -6,13 +6,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_localizations/flutter_localizations.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  // Garantir que os bindings estão inicializados
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Carregar variáveis de ambiente
+  await dotenv.load(fileName: ".env");
+
   runApp(
     const ProviderScope(
       child: JuntosApp(),
@@ -36,20 +43,20 @@ class JuntosApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       
-      // Localização
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('pt', 'PT'), // Português Portugal (default)
-        Locale('en', 'US'), // Inglês
-        Locale('fr', 'FR'), // Francês
-        Locale('es', 'ES'), // Espanhol
-      ],
-      locale: const Locale('pt', 'PT'),
+      // Localização (Temporariamente desativado)
+      // localizationsDelegates: const [
+      //   AppLocalizations.delegate,
+      //   GlobalMaterialLocalizations.delegate,
+      //   GlobalWidgetsLocalizations.delegate,
+      //   GlobalCupertinoLocalizations.delegate,
+      // ],
+      // supportedLocales: const [
+      //   Locale('pt', 'PT'),
+      //   Locale('en', 'US'),
+      //   Locale('fr', 'FR'),
+      //   Locale('es', 'ES'),
+      // ],
+      // locale: const Locale('pt', 'PT'),
       
       // Navegação
       routerConfig: router,

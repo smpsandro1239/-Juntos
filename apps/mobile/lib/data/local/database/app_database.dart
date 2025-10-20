@@ -12,16 +12,28 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:drift/native.dart';
 import '../models/favorite.dart';
+import '../models/review.dart';
 import '../daos/favorites_dao.dart';
+import '../daos/reviews_dao.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Favorites], daos: [FavoritesDao])
+@DriftDatabase(tables: [Favorites, Reviews], daos: [FavoritesDao, ReviewsDao])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2; // Incrementar a versão
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(reviews);
+          }
+        },
+      );
 }
 
 LazyDatabase _openConnection() {

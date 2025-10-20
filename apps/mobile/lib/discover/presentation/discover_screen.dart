@@ -101,30 +101,103 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildPoiList() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Breakpoint para tablet
+        const double tabletBreakpoint = 600;
+        final bool isTablet = constraints.maxWidth > tabletBreakpoint;
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Text(_errorMessage!),
-      );
-    }
+        if (_isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    if (_pois.isEmpty) {
-      return const Center(
-        child: Text('Nenhum POI encontrado'),
-      );
-    }
+        if (_errorMessage != null) {
+          return Center(child: Text(_errorMessage!));
+        }
 
-    return RefreshIndicator(
-      onRefresh: _loadNearbyPois,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _pois.length,
-        itemBuilder: (context, index) => _buildPoiCard(_pois[index]),
+        if (_pois.isEmpty) {
+          return const Center(child: Text('Nenhum POI encontrado'));
+        }
+
+        return RefreshIndicator(
+          onRefresh: _loadNearbyPois,
+          child: isTablet
+              ? _buildPoiGridView(constraints.maxWidth)
+              : _buildPoiListView(),
+        );
+      },
+    );
+  }
+
+  // Lista para telemóveis
+  Widget _buildPoiListView() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _pois.length,
+      itemBuilder: (context, index) => _buildPoiCard(_pois[index]),
+    );
+  }
+
+  // Grelha para tablets
+  Widget _buildPoiGridView(double maxWidth) {
+    final crossAxisCount = (maxWidth / 300).floor().clamp(2, 4);
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: 0.9,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: _pois.length,
+      itemBuilder: (context, index) => _buildPoiGridCard(_pois[index]),
+    );
+  }
+
+  Widget _buildPoiGridCard(Poi poi) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PoiDetailsScreen(poi: poi),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.image, color: Colors.grey),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    poi.nome,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    poi.cidade ?? 'Localização não disponível',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
