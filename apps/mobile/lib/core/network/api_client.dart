@@ -6,6 +6,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sentry_dio/sentry_dio.dart';
 
 class ApiClient {
   static const String _baseUrl = kDebugMode
@@ -26,6 +27,9 @@ class ApiClient {
         },
       ),
     );
+
+    // Adicionar o interceptor do Sentry
+    _dio.addSentry();
 
     // Interceptors para logging e tratamento de erros
     _dio.interceptors.addAll([

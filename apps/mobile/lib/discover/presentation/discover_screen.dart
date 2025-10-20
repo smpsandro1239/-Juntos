@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/providers/image_cache_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
@@ -120,6 +121,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       // 3. Em caso de erro (offline), fazer fallback para a cache
       final cached = await database.cachedPoisDao.getAllCachedPois();
       if (mounted) {
+        // Analytics: registar que a app entrou em modo offline
+        ref.read(analyticsServiceProvider).logOfflineModeTrigger();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Modo offline: a mostrar as últimas atividades guardadas.'),
@@ -405,9 +409,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         itemBuilder: (context, index) {
           // Verifica se a posição é para um anúncio
           if (adInterval > 0 && (index + 1) % (adInterval + 1) == 0) {
+            const ad = PartnerAd.mockAd;
             return PartnerAdCard(
-              ad: PartnerAd.mockAd,
-              onTap: () => _launchPartnerUrl(PartnerAd.mockAd.destinationUrl),
+              ad: ad,
+              onTap: () {
+                // Analytics: registar o clique no parceiro
+                ref.read(analyticsServiceProvider).logPartnerTap(ad.title);
+                _launchPartnerUrl(ad.destinationUrl);
+              },
             );
           }
 
@@ -458,11 +467,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildPoiCard(Poi poi) {
     final cacheManager = ref.watch(imageCacheManagerProvider);
     final database = ref.read(appDatabaseProvider);
+    final analytics = ref.read(analyticsServiceProvider);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
-          // Registar o clique no histórico
+          // Analytics: registar o clique na atividade
+          analytics.logActivityTap(poi.id!, poi.nome);
+          // Registar o clique no histórico para o algoritmo
           database.clickHistoryDao.addClick(poi.id!);
 
           // Navegar para tela de detalhes
@@ -554,6 +566,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       final favoritesRepository = ref.read(favoritesRepositoryProvider);
                       try {
                         final isNowFavorite = await favoritesRepository.toggleFavorite(poi);
+                        // Analytics: registar a alteração de favorito
+                        analytics.logFavoriteToggle(poi.id!, poi.nome, isNowFavorite);
 
                         if (!mounted) return;
 
