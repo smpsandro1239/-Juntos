@@ -6,9 +6,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../data/models/poi.dart';
 import '../../../core/providers/api_provider.dart';
+import 'widgets/reviews_section.dart';
 
 class PoiDetailsScreen extends ConsumerStatefulWidget {
   final Poi poi;
@@ -111,7 +112,7 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    // final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -260,6 +261,9 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
 
                   // Facilidades
                   _buildFacilitiesSection(),
+
+                  // Avaliações
+                  ReviewsSection(poiId: _poi.id!),
 
                   // Ações
                   const SizedBox(height: 32),

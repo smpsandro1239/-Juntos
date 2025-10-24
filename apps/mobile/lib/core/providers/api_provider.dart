@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/poi_service.dart';
 import '../../data/local/database/app_database.dart';
+import '../../data/local/daos/favorites_dao.dart';
 import '../../data/repositories/favorites_repository.dart';
 import '../network/api_client.dart';
 

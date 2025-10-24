@@ -14,7 +14,6 @@ class FavoritesRepository {
 
   FavoritesRepository(this._favoritesDao);
 
-  // Alternar favorito (add/remove)
   Future<bool> toggleFavorite(Poi poi) async {
     final isCurrentlyFavorite = await watchIsFavorite(poi.id!).first;
 
@@ -24,30 +23,45 @@ class FavoritesRepository {
     } else {
       final favorite = FavoritesCompanion(
         poiId: Value(poi.id!),
-        poiName: Value(poi.nome),
-        poiCategory: Value(poi.categoria),
-        poiAddress: Value(poi.enderecoCompleto),
-        poiLatitude: Value(poi.latitude),
-        poiLongitude: Value(poi.longitude),
-        poiPrice: Value(poi.precoFormatado),
-        poiIsFree: Value(poi.isGratis),
+        nome: Value(poi.nome),
+        descricao: Value(poi.descricao),
+        categoria: Value(poi.categoria),
+        idadeMin: Value(poi.idadeMin),
+        idadeMax: Value(poi.idadeMax),
+        precoMin: Value(poi.precoMin),
+        precoMax: Value(poi.precoMax),
+        latitude: Value(poi.latitude),
+        longitude: Value(poi.longitude),
+        morada: Value(poi.morada),
+        codigoPostal: Value(poi.codigoPostal),
+        cidade: Value(poi.cidade),
+        distrito: Value(poi.distrito),
+        telefone: Value(poi.telefone),
+        website: Value(poi.website),
+        email: Value(poi.email),
+        horarioAbertura: Value(poi.horarioAbertura),
+        horarioFecho: Value(poi.horarioFecho),
+        acessibilidade: Value(poi.acessibilidade),
+        estacionamento: Value(poi.estacionamento),
+        wc: Value(poi.wc),
+        cafetaria: Value(poi.cafetaria),
+        interior: Value(poi.interior),
+        exterior: Value(poi.exterior),
+        ativo: Value(poi.ativo),
       );
       await _favoritesDao.addFavorite(favorite);
       return true;
     }
   }
 
-  // Obter todos os favoritos
   Future<List<Favorite>> getAllFavorites() {
     return _favoritesDao.getAllFavorites();
   }
 
-  // Observar mudanças nos favoritos (para UI reativa)
   Stream<List<Favorite>> watchAllFavorites() {
     return _favoritesDao.watchAllFavorites();
   }
 
-  // Observar se um POI específico é favorito
   Stream<bool> watchIsFavorite(int poiId) {
     return _favoritesDao.watchIsFavorite(poiId);
   }

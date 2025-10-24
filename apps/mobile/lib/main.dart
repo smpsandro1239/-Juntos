@@ -43,7 +43,7 @@ class JuntosApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       
-      // Localização (Temporariamente desativado)
+      // Localização (Temporariamente desativado devido a [TEST-001])
       // localizationsDelegates: const [
       //   AppLocalizations.delegate,
       //   GlobalMaterialLocalizations.delegate,

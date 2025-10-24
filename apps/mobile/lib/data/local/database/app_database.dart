@@ -23,7 +23,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2; // Incrementar a versão
+  int get schemaVersion => 3; // Incrementar a versão
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +31,12 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(reviews);
+          }
+          if (from < 3) {
+            // A tabela de favoritos foi alterada significativamente.
+            // A estratégia mais simples é apagá-la e recriá-la.
+            await m.deleteTable('favorites');
+            await m.createTable(favorites);
           }
         },
       );

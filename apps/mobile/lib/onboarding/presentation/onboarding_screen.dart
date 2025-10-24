@@ -1,12 +1,14 @@
 // +JUNTOS
 // Ficheiro: lib/onboarding/presentation/onboarding_screen.dart
 // Descrição: Ecrã de onboarding da aplicação
-// Autor: (+JUNTOS team)
+// Autor: Jules
 // Locale: pt_PT
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'widgets/welcome_step.dart';
+import 'widgets/ages_step.dart';
+import 'widgets/location_step.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -21,10 +23,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          TextButton(
+            onPressed: () => context.go('/home'),
+            child: const Text('Experimentar mais tarde'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -32,25 +41,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (page) => setState(() => _currentPage = page),
-                children: [
-                  _buildPage(
-                    title: l10n.onboardingTitle1,
-                    description: l10n.onboardingDesc1,
-                    icon: Icons.family_restroom,
-                    color: theme.colorScheme.primary,
-                  ),
-                  _buildPage(
-                    title: l10n.onboardingTitle2,
-                    description: l10n.onboardingDesc2,
-                    icon: Icons.child_care,
-                    color: theme.colorScheme.secondary,
-                  ),
-                  _buildPage(
-                    title: l10n.onboardingTitle3,
-                    description: l10n.onboardingDesc3,
-                    icon: Icons.location_on,
-                    color: theme.colorScheme.tertiary,
-                  ),
+                children: const [
+                  WelcomeStep(),
+                  AgesStep(),
+                  LocationStep(),
                 ],
               ),
             ),
@@ -81,7 +75,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: FilledButton(
                       onPressed: _onNextPressed,
                       child: Text(
-                        _currentPage == 2 ? l10n.comecar : l10n.continuar,
+                        _currentPage == 2 ? "Começar" : "Continuar",
                       ),
                     ),
                   ),
@@ -94,51 +88,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildPage({
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 60,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
   void _onNextPressed() {
     if (_currentPage < 2) {
       _pageController.nextPage(
@@ -146,6 +95,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
+      // TODO: Guardar as preferências
       context.go('/home');
     }
   }

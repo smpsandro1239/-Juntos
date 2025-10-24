@@ -100,7 +100,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  void _onFeatureTapped(dynamic id, Point<double> point, LatLng latlng, ) {
+  void _onFeatureTapped(Point<double> point, LatLng coordinates, String id, String layerId, Annotation? annotation) {
     // A API do maplibre_gl retorna o `id` do feature, que é a geometria.
     // O ideal seria ter uma forma de associar o `id` ao POI.
     // Por agora, vamos procurar o POI mais próximo do ponto de toque.
@@ -108,7 +108,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     double minDistance = double.infinity;
 
     for (final poi in _pois) {
-      final distance = _calculateDistance(latlng, LatLng(poi.latitude, poi.longitude));
+      final distance = _calculateDistance(coordinates, LatLng(poi.latitude, poi.longitude));
       if (distance < minDistance) {
         minDistance = distance;
         tappedPoi = poi;
@@ -221,7 +221,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             onMapCreated: _onMapCreated,
             styleString: 'https://demotiles.maplibre.org/style.json',
             myLocationEnabled: true,
-            myLocationTrackingMode: MyLocationTrackingMode.Tracking,
+            myLocationTrackingMode: MyLocationTrackingMode.tracking,
           ),
           if (_errorMessage != null)
             Positioned(
