@@ -6,24 +6,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../application/onboarding_notifier.dart';
 import 'widgets/welcome_step.dart';
 import 'widgets/ages_step.dart';
 import 'widgets/location_step.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final onboardingState = ref.watch(onboardingNotifierProvider);
+
+    // Lógica para desativar o botão
+    bool isNextDisabled = (_currentPage == 1 && onboardingState.ageRanges.isEmpty);
 
     return Scaffold(
       appBar: AppBar(
@@ -73,7 +79,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: _onNextPressed,
+                      onPressed: isNextDisabled ? null : _onNextPressed,
                       child: Text(
                         _currentPage == 2 ? "Começar" : "Continuar",
                       ),
@@ -95,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // TODO: Guardar as preferências
+      ref.read(onboardingNotifierProvider.notifier).completeOnboarding();
       context.go('/home');
     }
   }

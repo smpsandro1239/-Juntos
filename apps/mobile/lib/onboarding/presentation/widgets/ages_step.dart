@@ -5,13 +5,25 @@
 // Locale: pt_PT
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../application/onboarding_notifier.dart';
 
-class AgesStep extends StatelessWidget {
+class AgesStep extends ConsumerWidget {
   const AgesStep({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final onboardingState = ref.watch(onboardingNotifierProvider);
+    final onboardingNotifier = ref.read(onboardingNotifierProvider.notifier);
+
+    final List<String> ageRanges = [
+      '0-2 anos',
+      '3-5 anos',
+      '6-8 anos',
+      '9-12 anos',
+    ];
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -46,7 +58,28 @@ class AgesStep extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          // TODO: Adicionar a UI para selecionar as idades
+          const SizedBox(height: 24),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            alignment: WrapAlignment.center,
+            children: ageRanges.map((range) {
+              final isSelected = onboardingState.ageRanges.contains(range);
+              return ChoiceChip(
+                label: Text(range),
+                selected: isSelected,
+                onSelected: (selected) {
+                  final newSelection = Set<String>.from(onboardingState.ageRanges);
+                  if (selected) {
+                    newSelection.add(range);
+                  } else {
+                    newSelection.remove(range);
+                  }
+                  onboardingNotifier.setAgeRanges(newSelection);
+                },
+              );
+            }).toList(),
+          ),
         ],
       ),
     );

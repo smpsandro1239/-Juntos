@@ -1,14 +1,14 @@
 // +JUNTOS
 // Ficheiro: lib/main.dart
 // Descrição: Entry point da aplicação Flutter
-// Autor: (+JUNTOS team)
+// Autor: Jules
 // Locale: pt_PT
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/providers/shared_preferences_provider.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -20,9 +20,15 @@ Future<void> main() async {
   // Carregar variáveis de ambiente
   await dotenv.load(fileName: ".env");
 
+  // Inicializar SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+
   runApp(
-    const ProviderScope(
-      child: JuntosApp(),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const JuntosApp(),
     ),
   );
 }
@@ -42,21 +48,6 @@ class JuntosApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      
-      // Localização (Temporariamente desativado devido a [TEST-001])
-      // localizationsDelegates: const [
-      //   AppLocalizations.delegate,
-      //   GlobalMaterialLocalizations.delegate,
-      //   GlobalWidgetsLocalizations.delegate,
-      //   GlobalCupertinoLocalizations.delegate,
-      // ],
-      // supportedLocales: const [
-      //   Locale('pt', 'PT'),
-      //   Locale('en', 'US'),
-      //   Locale('fr', 'FR'),
-      //   Locale('es', 'ES'),
-      // ],
-      // locale: const Locale('pt', 'PT'),
       
       // Navegação
       routerConfig: router,

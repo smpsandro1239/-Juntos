@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/providers/api_provider.dart';
 import '../../data/models/poi.dart';
+import '../application/filter_notifier.dart';
 import 'details/poi_details_screen.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
@@ -42,6 +43,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
 
     try {
       final poiService = ref.read(poiServiceProvider);
+      final filterState = ref.read(filterNotifierProvider);
 
       // Coordenadas de Lisboa como fallback
       const double lisboaLat = 38.7223;
@@ -52,7 +54,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         longitude: lisboaLng,
         idadeMin: 0,
         idadeMax: 12,
-        limite: 20,
+        limite: 50, // Aumentar o limite para ter mais resultados para filtrar
+        isFree: filterState.isFree,
+        isIndoor: filterState.isIndoor,
       );
 
       setState(() {
@@ -91,6 +95,50 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               },
             ),
           ),
+
+          // Filtros
+          SizedBox(
+            height: 50,
+            child: Consumer(
+              builder: (context, ref, child) {
+                final filterState = ref.watch(filterNotifierProvider);
+                final filterNotifier = ref.read(filterNotifierProvider.notifier);
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    FilterChip(
+                      label: const Text("Grátis"),
+                      selected: filterState.isFree ?? false,
+                      onSelected: (_) {
+                        filterNotifier.toggleFree();
+                        _loadNearbyPois();
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: const Text("Interior"),
+                      selected: filterState.isIndoor == true,
+                      onSelected: (_) {
+                        filterNotifier.toggleIndoor();
+                        _loadNearbyPois();
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: const Text("Exterior"),
+                      selected: filterState.isIndoor == false,
+                      onSelected: (_) {
+                        filterNotifier.toggleOutdoor();
+                        _loadNearbyPois();
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+
           // Lista de POIs próximos
           Expanded(
             child: _buildPoiList(),

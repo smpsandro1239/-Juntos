@@ -5,13 +5,17 @@
 // Locale: pt_PT
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../application/onboarding_notifier.dart';
 
-class LocationStep extends StatelessWidget {
+class LocationStep extends ConsumerWidget {
   const LocationStep({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final onboardingNotifier = ref.read(onboardingNotifierProvider.notifier);
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -53,6 +57,9 @@ class LocationStep extends StatelessWidget {
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
+            onChanged: (value) {
+              onboardingNotifier.setPostalCode(value);
+            },
           ),
         ],
       ),
