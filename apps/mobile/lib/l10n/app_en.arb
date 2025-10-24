@@ -1,0 +1,120 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2025-01-27T10:00:00.000Z",
+
+  "appTitle": "+JUNTOS",
+  "@appTitle": {
+    "description": "Application Title"
+  },
+
+  "appSlogan": "Discover everything you can do with your family, wherever you are.",
+  "@appSlogan": {
+    "description": "Application Slogan"
+  },
+
+  "onboardingTitle1": "Welcome to +JUNTOS",
+  "onboardingDesc1": "Your digital Pandora's box for family activities in Portugal.",
+
+  "onboardingTitle2": "Children's Ages",
+  "onboardingDesc2": "Tell us the ages so we can show suitable activities.",
+
+  "onboardingTitle3": "Location",
+  "onboardingDesc3": "Allow location access to find nearby activities.",
+
+  "continuar": "Continue",
+  "comecar": "Start",
+  "permitir": "Allow",
+  "agora_nao": "Not now",
+
+  "descobrir": "Discover",
+  "mapa": "Map",
+  "favoritos": "Favorites",
+  "perfil": "Profile",
+
+  "perto_de_ti": "Near you",
+  "gratis": "Free",
+  "interior": "Indoors",
+  "exterior": "Outdoors",
+  "acessivel": "Accessible",
+
+  "parques": "Parks",
+  "museus": "Museums",
+  "praias": "Beaches",
+  "trilhos": "Trails",
+  "teatros": "Theaters",
+
+  "pesquisar": "Search activities...",
+  "sem_resultados": "No results found",
+  "erro_carregar": "Error loading data",
+  "tentar_novamente": "Try again",
+
+  "detalhes": "Details",
+  "como_chegar": "Directions",
+  "guardar": "Save",
+  "partilhar": "Share",
+  "avaliar": "Rate",
+
+  "horarios": "Hours",
+  "precos": "Prices",
+  "contactos": "Contacts",
+  "comodidades": "Amenities",
+
+  "estacionamento": "Parking",
+  "wc": "Restroom",
+  "cafetaria": "Cafeteria",
+  "mudaFraldas": "Diaper changer",
+
+  "aberto": "Open",
+  "fechado": "Closed",
+  "aberto_ate": "Open until {hora}",
+  "@aberto_ate": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+
+  "distancia_km": "{distancia} km",
+  "@distancia_km": {
+    "placeholders": {
+      "distancia": {
+        "type": "String"
+      }
+    }
+  },
+
+  "idades_anos": "{min}-{max} years",
+  "@idades_anos": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+
+  "preco_desde": "From {preco}€",
+  "@preco_desde": {
+    "placeholders": {
+      "preco": {
+        "type": "String"
+      }
+    }
+  },
+
+  "shareMessage": "Check out what I found on +JUNTOS: {poiName} - {poiAddress}",
+  "@shareMessage": {
+    "description": "The message to share with a friend",
+    "placeholders": {
+      "poiName": {
+        "type": "String"
+      },
+      "poiAddress": {
+        "type": "String"
+      }
+    }
+  }
+}

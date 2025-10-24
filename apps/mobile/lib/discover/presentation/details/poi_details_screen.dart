@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../data/models/poi.dart';
 import '../../../core/providers/api_provider.dart';
 
@@ -78,34 +80,78 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
   }
 
   void _sharePoi() {
-    // TODO: Implementar compartilhamento
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Compartilhar - Em breve!')),
-    );
-  }
-
-  void _openInMaps() {
-    // TODO: Implementar abertura em mapas nativos
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Abrir no mapa - Em breve!')),
-    );
-  }
-
-  void _callPhone() {
-    if (_poi.telefone != null && _poi.telefone!.isNotEmpty) {
-      // TODO: Implementar chamada telefônica
+    try {
+      final l10n = AppLocalizations.of(context)!;
+      final textToShare = l10n.shareMessage(
+        _poi.nome,
+        _poi.enderecoCompleto,
+      );
+      Share.share(textToShare);
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ligar para ${_poi.telefone}')),
+        SnackBar(content: Text('Erro ao partilhar: $e')),
       );
     }
   }
 
-  void _openWebsite() {
-    if (_poi.website != null && _poi.website!.isNotEmpty) {
-      // TODO: Implementar abertura de website
+  void _openInMaps() async {
+    try {
+      final lat = _poi.latitude;
+      final lng = _poi.longitude;
+      final encodedNome = Uri.encodeComponent(_poi.nome);
+
+      final Uri googleMapsUrl =
+          Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+      final Uri appleMapsUrl = Uri.parse('https://maps.apple.com/?q=$encodedNome&ll=$lat,$lng');
+
+      if (await canLaunchUrl(googleMapsUrl)) {
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+      } else if (await canLaunchUrl(appleMapsUrl)) {
+        await launchUrl(appleMapsUrl, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Não foi possível abrir o mapa';
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Abrir website: ${_poi.website}')),
+        SnackBar(content: Text('Erro ao abrir o mapa: $e')),
       );
+    }
+  }
+
+  void _callPhone() async {
+    if (_poi.telefone != null && _poi.telefone!.isNotEmpty) {
+      final Uri phoneUri = Uri(scheme: 'tel', path: _poi.telefone);
+      try {
+        if (await canLaunchUrl(phoneUri)) {
+          await launchUrl(phoneUri);
+        } else {
+          throw 'Não foi possível ligar para $phoneUri';
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao tentar ligar: $e')),
+        );
+      }
+    }
+  }
+
+  void _openWebsite() async {
+    if (_poi.website != null && _poi.website!.isNotEmpty) {
+      final Uri websiteUri = Uri.parse(_poi.website!);
+      try {
+        if (await canLaunchUrl(websiteUri)) {
+          await launchUrl(websiteUri, mode: LaunchMode.externalApplication);
+        } else {
+          throw 'Não foi possível abrir o website';
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao abrir website: $e')),
+        );
+      }
     }
   }
 
