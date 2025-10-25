@@ -5,10 +5,12 @@
 // Locale: pt_PT
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../data/models/poi.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/services_provider.dart';
 import 'widgets/reviews_section.dart';
 
 class PoiDetailsScreen extends ConsumerStatefulWidget {
@@ -25,12 +27,30 @@ class PoiDetailsScreen extends ConsumerStatefulWidget {
 
 class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
   late Poi _poi;
+  final ScrollController _scrollController = ScrollController();
+  double _parallaxOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
     _poi = widget.poi;
+    _scrollController.addListener(_updateParallax);
     _loadFullPoiDetails();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateParallax);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateParallax() {
+    if (_scrollController.hasClients) {
+      setState(() {
+        _parallaxOffset = -_scrollController.offset * 0.3;
+      });
+    }
   }
 
   Future<void> _loadFullPoiDetails() async {
@@ -51,9 +71,13 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
 
   void _toggleFavorite() async {
     final favoritesRepository = ref.read(favoritesRepositoryProvider);
+    final analyticsService = ref.read(analyticsServiceProvider);
 
     try {
       final isNowFavorite = await favoritesRepository.toggleFavorite(_poi);
+
+      // Analytics
+      analyticsService.logFavoriteToggle(_poi.id, isNowFavorite);
 
       if (!mounted) return;
 
@@ -117,6 +141,7 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
 
     return Scaffold(
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           // App Bar com imagem
           SliverAppBar(
@@ -137,39 +162,33 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
                   ],
                 ),
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      theme.primaryColor,
-                      theme.primaryColor.withOpacity(0.7),
-                    ],
+              background: Transform.translate(
+                offset: Offset(0, _parallaxOffset),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        theme.primaryColor,
+                        theme.primaryColor.withOpacity(0.7),
+                      ],
+                    ),
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.image,
-                    size: 80,
-                    color: Colors.white54,
+                  child: const Center(
+                    child: Icon(
+                      Icons.image,
+                      size: 80,
+                      color: Colors.white54,
+                    ),
                   ),
                 ),
               ),
             ),
             actions: [
-              StreamBuilder<bool>(
-                stream: ref.watch(favoritesRepositoryProvider).watchIsFavorite(_poi.id!),
-                builder: (context, snapshot) {
-                  final isFavorite = snapshot.data ?? false;
-                  return IconButton(
-                    onPressed: _toggleFavorite,
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.white,
-                    ),
-                  );
-                },
+              _FavoriteButton(
+                poi: _poi,
+                onToggle: _toggleFavorite,
               ),
               IconButton(
                 onPressed: _sharePoi,
@@ -398,6 +417,55 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
           ),
         ],
       ],
+    );
+  }
+}
+
+class _FavoriteButton extends ConsumerWidget {
+  final Poi poi;
+  final VoidCallback onToggle;
+
+  const _FavoriteButton({required this.poi, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    double scale = 1.0;
+    final isFavoriteStream = ref.watch(favoritesRepositoryProvider).watchIsFavorite(poi.id!);
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return GestureDetector(
+          onTapDown: (_) {
+            setState(() => scale = 1.2);
+            HapticFeedback.lightImpact();
+          },
+          onTapUp: (_) {
+            setState(() => scale = 1.0);
+            onToggle();
+          },
+          onTapCancel: () {
+            setState(() => scale = 1.0);
+          },
+          child: AnimatedScale(
+            scale: scale,
+            duration: const Duration(milliseconds: 150),
+            child: StreamBuilder<bool>(
+              stream: isFavoriteStream,
+              builder: (context, snapshot) {
+                final isFavorite = snapshot.data ?? false;
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.redAccent : Colors.white,
+                    size: 28,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

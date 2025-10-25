@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package.flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/api_provider.dart';
+import '../../core/ui/widgets/empty_state_widget.dart';
 import '../../discover/presentation/details/poi_details_screen.dart';
 import '../../data/models/poi.dart';
 import '../../data/local/database/app_database.dart';
@@ -38,7 +39,10 @@ class FavoritesScreen extends ConsumerWidget {
           final favorites = snapshot.data ?? [];
 
           if (favorites.isEmpty) {
-            return const Center(child: Text('Nenhum favorito ainda.'));
+            return const EmptyStateWidget(
+              lottieAsset: 'assets/lottie/empty_box.json',
+              message: 'Ainda não adicionaste nenhuma atividade aos teus favoritos.',
+            );
           }
 
           return ListView.builder(

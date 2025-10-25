@@ -40,6 +40,16 @@ final favoritesDaoProvider = Provider<FavoritesDao>((ref) {
   return database.favoritesDao;
 });
 
+final clickHistoryDaoProvider = Provider<ClickHistoryDao>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return database.clickHistoryDao;
+});
+
+final cachedPoisDaoProvider = Provider<CachedPoisDao>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return database.cachedPoisDao;
+});
+
 // Provider para repositório de favoritos
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   final favoritesDao = ref.watch(favoritesDaoProvider);

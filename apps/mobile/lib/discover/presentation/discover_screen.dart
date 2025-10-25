@@ -7,9 +7,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:mobile/core/providers/services_provider.dart';
 import '../../core/providers/api_provider.dart';
 import '../../data/models/poi.dart';
 import '../application/filter_notifier.dart';
+import '../../core/ui/widgets/empty_state_widget.dart';
+import 'widgets/partner_ad_card.dart';
+import '../application/recommendation_service.dart';
 import 'details/poi_details_screen.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
@@ -59,15 +63,50 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         isIndoor: filterState.isIndoor,
       );
 
+      // Ordenar os POIs usando o algoritmo "Momento"
+      final recommendationService = ref.read(recommendationServiceProvider);
+      final sortedPois = await recommendationService.sortPois(pois);
+
+      // Guardar os POIs originais (não ordenados) na cache
+      final cachedPoisDao = ref.read(cachedPoisDaoProvider);
+      await cachedPoisDao.cachePois(pois);
+
       setState(() {
-        _pois = pois;
+        _pois = sortedPois;
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      // Se a chamada à API falhar, tenta carregar da cache
+      try {
+        final cachedPoisDao = ref.read(cachedPoisDaoProvider);
+        final cachedPois = await cachedPoisDao.getAllCachedPois();
+
+        if (cachedPois.isNotEmpty) {
+          // Analytics
+          ref.read(analyticsServiceProvider).logOfflineModeTrigger();
+
+          // Ordena os POIs da cache também
+          final recommendationService = ref.read(recommendationServiceProvider);
+          final sortedPois = await recommendationService.sortPois(cachedPois);
+          setState(() {
+            _pois = sortedPois;
+            _isLoading = false;
+            // Opcional: mostrar uma mensagem a dizer que os dados são da cache
+          });
+        } else {
+          // Se a cache também estiver vazia, mostra o erro original
+          setState(() {
+            _errorMessage = 'Sem ligação à Internet e sem dados em cache.\n$e';
+            _isLoading = false;
+          });
+        }
+      } catch (cacheError) {
+        // Se a leitura da cache falhar, mostra ambos os erros
+        setState(() {
+          _errorMessage = 'Erro ao aceder à API e à cache.\nAPI Error: $e\nCache Error: $cacheError';
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -160,11 +199,18 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         }
 
         if (_errorMessage != null) {
-          return Center(child: Text(_errorMessage!));
+          return EmptyStateWidget(
+            lottieAsset: 'assets/lottie/connection_error.json',
+            message: _errorMessage!,
+            onRetry: _loadNearbyPois,
+          );
         }
 
         if (_pois.isEmpty) {
-          return const Center(child: Text('Nenhum POI encontrado'));
+          return const EmptyStateWidget(
+            lottieAsset: 'assets/lottie/no_data.json',
+            message: 'Não encontrámos atividades com os filtros selecionados.',
+          );
         }
 
         return RefreshIndicator(
@@ -179,15 +225,23 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
 
   // Lista para telemóveis
   Widget _buildPoiListView() {
+    const adInterval = 15;
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _pois.length,
-      itemBuilder: (context, index) => _buildPoiCard(_pois[index]),
+      itemCount: _pois.length + (_pois.length ~/ adInterval),
+      itemBuilder: (context, index) {
+        if (index > 0 && (index + 1) % (adInterval + 1) == 0) {
+          return const PartnerAdCard();
+        }
+        final poiIndex = index - (index ~/ (adInterval + 1));
+        return _buildPoiCard(_pois[poiIndex]);
+      },
     );
   }
 
   // Grelha para tablets
   Widget _buildPoiGridView(double maxWidth) {
+    const adInterval = 15;
     final crossAxisCount = (maxWidth / 300).floor().clamp(2, 4);
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -197,8 +251,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
-      itemCount: _pois.length,
-      itemBuilder: (context, index) => _buildPoiGridCard(_pois[index]),
+      itemCount: _pois.length + (_pois.length ~/ adInterval),
+      itemBuilder: (context, index) {
+        if (index > 0 && (index + 1) % (adInterval + 1) == 0) {
+          return const PartnerAdCard();
+        }
+        final poiIndex = index - (index ~/ (adInterval + 1));
+        return _buildPoiGridCard(_pois[poiIndex]);
+      },
     );
   }
 
@@ -207,6 +267,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
+          // Analytics
+          ref.read(analyticsServiceProvider).logActivityTap(poi.id, poi.nome);
+          // Registar o clique para o algoritmo
+          ref.read(clickHistoryDaoProvider).addClick(poi.id);
+
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => PoiDetailsScreen(poi: poi),
@@ -255,6 +320,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
+          // Analytics
+          ref.read(analyticsServiceProvider).logActivityTap(poi.id, poi.nome);
+          // Registar o clique para o algoritmo
+          ref.read(clickHistoryDaoProvider).addClick(poi.id);
+
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => PoiDetailsScreen(poi: poi),

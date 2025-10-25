@@ -1589,18 +1589,1286 @@ class ReviewsCompanion extends UpdateCompanion<Review> {
   }
 }
 
+class $ClickHistoryTable extends ClickHistory
+    with TableInfo<$ClickHistoryTable, ClickHistoryEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClickHistoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _poiIdMeta = const VerificationMeta('poiId');
+  @override
+  late final GeneratedColumn<int> poiId = GeneratedColumn<int>(
+      'poi_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _clickedAtMeta =
+      const VerificationMeta('clickedAt');
+  @override
+  late final GeneratedColumn<DateTime> clickedAt = GeneratedColumn<DateTime>(
+      'clicked_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [poiId, clickedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'click_history';
+  @override
+  VerificationContext validateIntegrity(Insertable<ClickHistoryEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('poi_id')) {
+      context.handle(
+          _poiIdMeta, poiId.isAcceptableOrUnknown(data['poi_id']!, _poiIdMeta));
+    } else if (isInserting) {
+      context.missing(_poiIdMeta);
+    }
+    if (data.containsKey('clicked_at')) {
+      context.handle(_clickedAtMeta,
+          clickedAt.isAcceptableOrUnknown(data['clicked_at']!, _clickedAtMeta));
+    } else if (isInserting) {
+      context.missing(_clickedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {poiId, clickedAt};
+  @override
+  ClickHistoryEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClickHistoryEntry(
+      poiId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}poi_id'])!,
+      clickedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}clicked_at'])!,
+    );
+  }
+
+  @override
+  $ClickHistoryTable createAlias(String alias) {
+    return $ClickHistoryTable(attachedDatabase, alias);
+  }
+}
+
+class ClickHistoryEntry extends DataClass
+    implements Insertable<ClickHistoryEntry> {
+  final int poiId;
+  final DateTime clickedAt;
+  const ClickHistoryEntry({required this.poiId, required this.clickedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['poi_id'] = Variable<int>(poiId);
+    map['clicked_at'] = Variable<DateTime>(clickedAt);
+    return map;
+  }
+
+  ClickHistoryCompanion toCompanion(bool nullToAbsent) {
+    return ClickHistoryCompanion(
+      poiId: Value(poiId),
+      clickedAt: Value(clickedAt),
+    );
+  }
+
+  factory ClickHistoryEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClickHistoryEntry(
+      poiId: serializer.fromJson<int>(json['poiId']),
+      clickedAt: serializer.fromJson<DateTime>(json['clickedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'poiId': serializer.toJson<int>(poiId),
+      'clickedAt': serializer.toJson<DateTime>(clickedAt),
+    };
+  }
+
+  ClickHistoryEntry copyWith({int? poiId, DateTime? clickedAt}) =>
+      ClickHistoryEntry(
+        poiId: poiId ?? this.poiId,
+        clickedAt: clickedAt ?? this.clickedAt,
+      );
+  ClickHistoryEntry copyWithCompanion(ClickHistoryCompanion data) {
+    return ClickHistoryEntry(
+      poiId: data.poiId.present ? data.poiId.value : this.poiId,
+      clickedAt: data.clickedAt.present ? data.clickedAt.value : this.clickedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClickHistoryEntry(')
+          ..write('poiId: $poiId, ')
+          ..write('clickedAt: $clickedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(poiId, clickedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClickHistoryEntry &&
+          other.poiId == this.poiId &&
+          other.clickedAt == this.clickedAt);
+}
+
+class ClickHistoryCompanion extends UpdateCompanion<ClickHistoryEntry> {
+  final Value<int> poiId;
+  final Value<DateTime> clickedAt;
+  final Value<int> rowid;
+  const ClickHistoryCompanion({
+    this.poiId = const Value.absent(),
+    this.clickedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClickHistoryCompanion.insert({
+    required int poiId,
+    required DateTime clickedAt,
+    this.rowid = const Value.absent(),
+  })  : poiId = Value(poiId),
+        clickedAt = Value(clickedAt);
+  static Insertable<ClickHistoryEntry> custom({
+    Expression<int>? poiId,
+    Expression<DateTime>? clickedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (poiId != null) 'poi_id': poiId,
+      if (clickedAt != null) 'clicked_at': clickedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClickHistoryCompanion copyWith(
+      {Value<int>? poiId, Value<DateTime>? clickedAt, Value<int>? rowid}) {
+    return ClickHistoryCompanion(
+      poiId: poiId ?? this.poiId,
+      clickedAt: clickedAt ?? this.clickedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (poiId.present) {
+      map['poi_id'] = Variable<int>(poiId.value);
+    }
+    if (clickedAt.present) {
+      map['clicked_at'] = Variable<DateTime>(clickedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClickHistoryCompanion(')
+          ..write('poiId: $poiId, ')
+          ..write('clickedAt: $clickedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CachedPoisTable extends CachedPois
+    with TableInfo<$CachedPoisTable, CachedPoiEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedPoisTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+      'nome', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _descricaoMeta =
+      const VerificationMeta('descricao');
+  @override
+  late final GeneratedColumn<String> descricao = GeneratedColumn<String>(
+      'descricao', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _categoriaMeta =
+      const VerificationMeta('categoria');
+  @override
+  late final GeneratedColumn<String> categoria = GeneratedColumn<String>(
+      'categoria', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _subcategoriaMeta =
+      const VerificationMeta('subcategoria');
+  @override
+  late final GeneratedColumn<String> subcategoria = GeneratedColumn<String>(
+      'subcategoria', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _latitudeMeta =
+      const VerificationMeta('latitude');
+  @override
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+      'latitude', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _longitudeMeta =
+      const VerificationMeta('longitude');
+  @override
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+      'longitude', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _moradaMeta = const VerificationMeta('morada');
+  @override
+  late final GeneratedColumn<String> morada = GeneratedColumn<String>(
+      'morada', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cidadeMeta = const VerificationMeta('cidade');
+  @override
+  late final GeneratedColumn<String> cidade = GeneratedColumn<String>(
+      'cidade', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _codPostalMeta =
+      const VerificationMeta('codPostal');
+  @override
+  late final GeneratedColumn<String> codPostal = GeneratedColumn<String>(
+      'cod_postal', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _paisMeta = const VerificationMeta('pais');
+  @override
+  late final GeneratedColumn<String> pais = GeneratedColumn<String>(
+      'pais', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _telefoneMeta =
+      const VerificationMeta('telefone');
+  @override
+  late final GeneratedColumn<String> telefone = GeneratedColumn<String>(
+      'telefone', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+      'email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _websiteMeta =
+      const VerificationMeta('website');
+  @override
+  late final GeneratedColumn<String> website = GeneratedColumn<String>(
+      'website', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _idadeMinMeta =
+      const VerificationMeta('idadeMin');
+  @override
+  late final GeneratedColumn<int> idadeMin = GeneratedColumn<int>(
+      'idade_min', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _idadeMaxMeta =
+      const VerificationMeta('idadeMax');
+  @override
+  late final GeneratedColumn<int> idadeMax = GeneratedColumn<int>(
+      'idade_max', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _precoMeta = const VerificationMeta('preco');
+  @override
+  late final GeneratedColumn<double> preco = GeneratedColumn<double>(
+      'preco', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _isGratuitoMeta =
+      const VerificationMeta('isGratuito');
+  @override
+  late final GeneratedColumn<bool> isGratuito = GeneratedColumn<bool>(
+      'is_gratuito', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_gratuito" IN (0, 1))'));
+  static const VerificationMeta _isAcessivelMeta =
+      const VerificationMeta('isAcessivel');
+  @override
+  late final GeneratedColumn<bool> isAcessivel = GeneratedColumn<bool>(
+      'is_acessivel', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_acessivel" IN (0, 1))'));
+  static const VerificationMeta _duracaoMeta =
+      const VerificationMeta('duracao');
+  @override
+  late final GeneratedColumn<int> duracao = GeneratedColumn<int>(
+      'duracao', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _horarioMeta =
+      const VerificationMeta('horario');
+  @override
+  late final GeneratedColumn<String> horario = GeneratedColumn<String>(
+      'horario', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
+  @override
+  late final GeneratedColumn<String> tags = GeneratedColumn<String>(
+      'tags', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _cachedAtMeta =
+      const VerificationMeta('cachedAt');
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+      'cached_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        nome,
+        descricao,
+        categoria,
+        subcategoria,
+        latitude,
+        longitude,
+        morada,
+        cidade,
+        codPostal,
+        pais,
+        telefone,
+        email,
+        website,
+        idadeMin,
+        idadeMax,
+        preco,
+        isGratuito,
+        isAcessivel,
+        duracao,
+        horario,
+        tags,
+        updatedAt,
+        cachedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_pois';
+  @override
+  VerificationContext validateIntegrity(Insertable<CachedPoiEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+          _nomeMeta, nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta));
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('descricao')) {
+      context.handle(_descricaoMeta,
+          descricao.isAcceptableOrUnknown(data['descricao']!, _descricaoMeta));
+    }
+    if (data.containsKey('categoria')) {
+      context.handle(_categoriaMeta,
+          categoria.isAcceptableOrUnknown(data['categoria']!, _categoriaMeta));
+    } else if (isInserting) {
+      context.missing(_categoriaMeta);
+    }
+    if (data.containsKey('subcategoria')) {
+      context.handle(
+          _subcategoriaMeta,
+          subcategoria.isAcceptableOrUnknown(
+              data['subcategoria']!, _subcategoriaMeta));
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(_latitudeMeta,
+          latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta));
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(_longitudeMeta,
+          longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta));
+    }
+    if (data.containsKey('morada')) {
+      context.handle(_moradaMeta,
+          morada.isAcceptableOrUnknown(data['morada']!, _moradaMeta));
+    }
+    if (data.containsKey('cidade')) {
+      context.handle(_cidadeMeta,
+          cidade.isAcceptableOrUnknown(data['cidade']!, _cidadeMeta));
+    }
+    if (data.containsKey('cod_postal')) {
+      context.handle(_codPostalMeta,
+          codPostal.isAcceptableOrUnknown(data['cod_postal']!, _codPostalMeta));
+    }
+    if (data.containsKey('pais')) {
+      context.handle(
+          _paisMeta, pais.isAcceptableOrUnknown(data['pais']!, _paisMeta));
+    }
+    if (data.containsKey('telefone')) {
+      context.handle(_telefoneMeta,
+          telefone.isAcceptableOrUnknown(data['telefone']!, _telefoneMeta));
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+          _emailMeta, email.isAcceptableOrUnknown(data['email']!, _emailMeta));
+    }
+    if (data.containsKey('website')) {
+      context.handle(_websiteMeta,
+          website.isAcceptableOrUnknown(data['website']!, _websiteMeta));
+    }
+    if (data.containsKey('idade_min')) {
+      context.handle(_idadeMinMeta,
+          idadeMin.isAcceptableOrUnknown(data['idade_min']!, _idadeMinMeta));
+    }
+    if (data.containsKey('idade_max')) {
+      context.handle(_idadeMaxMeta,
+          idadeMax.isAcceptableOrUnknown(data['idade_max']!, _idadeMaxMeta));
+    }
+    if (data.containsKey('preco')) {
+      context.handle(
+          _precoMeta, preco.isAcceptableOrUnknown(data['preco']!, _precoMeta));
+    }
+    if (data.containsKey('is_gratuito')) {
+      context.handle(
+          _isGratuitoMeta,
+          isGratuito.isAcceptableOrUnknown(
+              data['is_gratuito']!, _isGratuitoMeta));
+    }
+    if (data.containsKey('is_acessivel')) {
+      context.handle(
+          _isAcessivelMeta,
+          isAcessivel.isAcceptableOrUnknown(
+              data['is_acessivel']!, _isAcessivelMeta));
+    }
+    if (data.containsKey('duracao')) {
+      context.handle(_duracaoMeta,
+          duracao.isAcceptableOrUnknown(data['duracao']!, _duracaoMeta));
+    }
+    if (data.containsKey('horario')) {
+      context.handle(_horarioMeta,
+          horario.isAcceptableOrUnknown(data['horario']!, _horarioMeta));
+    }
+    if (data.containsKey('tags')) {
+      context.handle(
+          _tagsMeta, tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(_cachedAtMeta,
+          cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta));
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CachedPoiEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedPoiEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      nome: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}nome'])!,
+      descricao: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}descricao']),
+      categoria: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}categoria'])!,
+      subcategoria: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}subcategoria']),
+      latitude: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}latitude']),
+      longitude: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}longitude']),
+      morada: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}morada']),
+      cidade: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}cidade']),
+      codPostal: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}cod_postal']),
+      pais: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pais']),
+      telefone: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}telefone']),
+      email: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}email']),
+      website: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}website']),
+      idadeMin: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}idade_min']),
+      idadeMax: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}idade_max']),
+      preco: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}preco']),
+      isGratuito: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_gratuito']),
+      isAcessivel: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_acessivel']),
+      duracao: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duracao']),
+      horario: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}horario']),
+      tags: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}tags']),
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+      cachedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}cached_at'])!,
+    );
+  }
+
+  @override
+  $CachedPoisTable createAlias(String alias) {
+    return $CachedPoisTable(attachedDatabase, alias);
+  }
+}
+
+class CachedPoiEntry extends DataClass implements Insertable<CachedPoiEntry> {
+  final int id;
+  final String nome;
+  final String? descricao;
+  final String categoria;
+  final String? subcategoria;
+  final double? latitude;
+  final double? longitude;
+  final String? morada;
+  final String? cidade;
+  final String? codPostal;
+  final String? pais;
+  final String? telefone;
+  final String? email;
+  final String? website;
+  final int? idadeMin;
+  final int? idadeMax;
+  final double? preco;
+  final bool? isGratuito;
+  final bool? isAcessivel;
+  final int? duracao;
+  final String? horario;
+  final String? tags;
+  final DateTime? updatedAt;
+  final DateTime cachedAt;
+  const CachedPoiEntry(
+      {required this.id,
+      required this.nome,
+      this.descricao,
+      required this.categoria,
+      this.subcategoria,
+      this.latitude,
+      this.longitude,
+      this.morada,
+      this.cidade,
+      this.codPostal,
+      this.pais,
+      this.telefone,
+      this.email,
+      this.website,
+      this.idadeMin,
+      this.idadeMax,
+      this.preco,
+      this.isGratuito,
+      this.isAcessivel,
+      this.duracao,
+      this.horario,
+      this.tags,
+      this.updatedAt,
+      required this.cachedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['nome'] = Variable<String>(nome);
+    if (!nullToAbsent || descricao != null) {
+      map['descricao'] = Variable<String>(descricao);
+    }
+    map['categoria'] = Variable<String>(categoria);
+    if (!nullToAbsent || subcategoria != null) {
+      map['subcategoria'] = Variable<String>(subcategoria);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = Variable<double>(longitude);
+    }
+    if (!nullToAbsent || morada != null) {
+      map['morada'] = Variable<String>(morada);
+    }
+    if (!nullToAbsent || cidade != null) {
+      map['cidade'] = Variable<String>(cidade);
+    }
+    if (!nullToAbsent || codPostal != null) {
+      map['cod_postal'] = Variable<String>(codPostal);
+    }
+    if (!nullToAbsent || pais != null) {
+      map['pais'] = Variable<String>(pais);
+    }
+    if (!nullToAbsent || telefone != null) {
+      map['telefone'] = Variable<String>(telefone);
+    }
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    if (!nullToAbsent || website != null) {
+      map['website'] = Variable<String>(website);
+    }
+    if (!nullToAbsent || idadeMin != null) {
+      map['idade_min'] = Variable<int>(idadeMin);
+    }
+    if (!nullToAbsent || idadeMax != null) {
+      map['idade_max'] = Variable<int>(idadeMax);
+    }
+    if (!nullToAbsent || preco != null) {
+      map['preco'] = Variable<double>(preco);
+    }
+    if (!nullToAbsent || isGratuito != null) {
+      map['is_gratuito'] = Variable<bool>(isGratuito);
+    }
+    if (!nullToAbsent || isAcessivel != null) {
+      map['is_acessivel'] = Variable<bool>(isAcessivel);
+    }
+    if (!nullToAbsent || duracao != null) {
+      map['duracao'] = Variable<int>(duracao);
+    }
+    if (!nullToAbsent || horario != null) {
+      map['horario'] = Variable<String>(horario);
+    }
+    if (!nullToAbsent || tags != null) {
+      map['tags'] = Variable<String>(tags);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  CachedPoisCompanion toCompanion(bool nullToAbsent) {
+    return CachedPoisCompanion(
+      id: Value(id),
+      nome: Value(nome),
+      descricao: descricao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(descricao),
+      categoria: Value(categoria),
+      subcategoria: subcategoria == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subcategoria),
+      latitude: latitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latitude),
+      longitude: longitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(longitude),
+      morada:
+          morada == null && nullToAbsent ? const Value.absent() : Value(morada),
+      cidade:
+          cidade == null && nullToAbsent ? const Value.absent() : Value(cidade),
+      codPostal: codPostal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(codPostal),
+      pais: pais == null && nullToAbsent ? const Value.absent() : Value(pais),
+      telefone: telefone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(telefone),
+      email:
+          email == null && nullToAbsent ? const Value.absent() : Value(email),
+      website: website == null && nullToAbsent
+          ? const Value.absent()
+          : Value(website),
+      idadeMin: idadeMin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(idadeMin),
+      idadeMax: idadeMax == null && nullToAbsent
+          ? const Value.absent()
+          : Value(idadeMax),
+      preco:
+          preco == null && nullToAbsent ? const Value.absent() : Value(preco),
+      isGratuito: isGratuito == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isGratuito),
+      isAcessivel: isAcessivel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isAcessivel),
+      duracao: duracao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(duracao),
+      horario: horario == null && nullToAbsent
+          ? const Value.absent()
+          : Value(horario),
+      tags: tags == null && nullToAbsent ? const Value.absent() : Value(tags),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory CachedPoiEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedPoiEntry(
+      id: serializer.fromJson<int>(json['id']),
+      nome: serializer.fromJson<String>(json['nome']),
+      descricao: serializer.fromJson<String?>(json['descricao']),
+      categoria: serializer.fromJson<String>(json['categoria']),
+      subcategoria: serializer.fromJson<String?>(json['subcategoria']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
+      morada: serializer.fromJson<String?>(json['morada']),
+      cidade: serializer.fromJson<String?>(json['cidade']),
+      codPostal: serializer.fromJson<String?>(json['codPostal']),
+      pais: serializer.fromJson<String?>(json['pais']),
+      telefone: serializer.fromJson<String?>(json['telefone']),
+      email: serializer.fromJson<String?>(json['email']),
+      website: serializer.fromJson<String?>(json['website']),
+      idadeMin: serializer.fromJson<int?>(json['idadeMin']),
+      idadeMax: serializer.fromJson<int?>(json['idadeMax']),
+      preco: serializer.fromJson<double?>(json['preco']),
+      isGratuito: serializer.fromJson<bool?>(json['isGratuito']),
+      isAcessivel: serializer.fromJson<bool?>(json['isAcessivel']),
+      duracao: serializer.fromJson<int?>(json['duracao']),
+      horario: serializer.fromJson<String?>(json['horario']),
+      tags: serializer.fromJson<String?>(json['tags']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'nome': serializer.toJson<String>(nome),
+      'descricao': serializer.toJson<String?>(descricao),
+      'categoria': serializer.toJson<String>(categoria),
+      'subcategoria': serializer.toJson<String?>(subcategoria),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
+      'morada': serializer.toJson<String?>(morada),
+      'cidade': serializer.toJson<String?>(cidade),
+      'codPostal': serializer.toJson<String?>(codPostal),
+      'pais': serializer.toJson<String?>(pais),
+      'telefone': serializer.toJson<String?>(telefone),
+      'email': serializer.toJson<String?>(email),
+      'website': serializer.toJson<String?>(website),
+      'idadeMin': serializer.toJson<int?>(idadeMin),
+      'idadeMax': serializer.toJson<int?>(idadeMax),
+      'preco': serializer.toJson<double?>(preco),
+      'isGratuito': serializer.toJson<bool?>(isGratuito),
+      'isAcessivel': serializer.toJson<bool?>(isAcessivel),
+      'duracao': serializer.toJson<int?>(duracao),
+      'horario': serializer.toJson<String?>(horario),
+      'tags': serializer.toJson<String?>(tags),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  CachedPoiEntry copyWith(
+          {int? id,
+          String? nome,
+          Value<String?> descricao = const Value.absent(),
+          String? categoria,
+          Value<String?> subcategoria = const Value.absent(),
+          Value<double?> latitude = const Value.absent(),
+          Value<double?> longitude = const Value.absent(),
+          Value<String?> morada = const Value.absent(),
+          Value<String?> cidade = const Value.absent(),
+          Value<String?> codPostal = const Value.absent(),
+          Value<String?> pais = const Value.absent(),
+          Value<String?> telefone = const Value.absent(),
+          Value<String?> email = const Value.absent(),
+          Value<String?> website = const Value.absent(),
+          Value<int?> idadeMin = const Value.absent(),
+          Value<int?> idadeMax = const Value.absent(),
+          Value<double?> preco = const Value.absent(),
+          Value<bool?> isGratuito = const Value.absent(),
+          Value<bool?> isAcessivel = const Value.absent(),
+          Value<int?> duracao = const Value.absent(),
+          Value<String?> horario = const Value.absent(),
+          Value<String?> tags = const Value.absent(),
+          Value<DateTime?> updatedAt = const Value.absent(),
+          DateTime? cachedAt}) =>
+      CachedPoiEntry(
+        id: id ?? this.id,
+        nome: nome ?? this.nome,
+        descricao: descricao.present ? descricao.value : this.descricao,
+        categoria: categoria ?? this.categoria,
+        subcategoria:
+            subcategoria.present ? subcategoria.value : this.subcategoria,
+        latitude: latitude.present ? latitude.value : this.latitude,
+        longitude: longitude.present ? longitude.value : this.longitude,
+        morada: morada.present ? morada.value : this.morada,
+        cidade: cidade.present ? cidade.value : this.cidade,
+        codPostal: codPostal.present ? codPostal.value : this.codPostal,
+        pais: pais.present ? pais.value : this.pais,
+        telefone: telefone.present ? telefone.value : this.telefone,
+        email: email.present ? email.value : this.email,
+        website: website.present ? website.value : this.website,
+        idadeMin: idadeMin.present ? idadeMin.value : this.idadeMin,
+        idadeMax: idadeMax.present ? idadeMax.value : this.idadeMax,
+        preco: preco.present ? preco.value : this.preco,
+        isGratuito: isGratuito.present ? isGratuito.value : this.isGratuito,
+        isAcessivel: isAcessivel.present ? isAcessivel.value : this.isAcessivel,
+        duracao: duracao.present ? duracao.value : this.duracao,
+        horario: horario.present ? horario.value : this.horario,
+        tags: tags.present ? tags.value : this.tags,
+        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        cachedAt: cachedAt ?? this.cachedAt,
+      );
+  CachedPoiEntry copyWithCompanion(CachedPoisCompanion data) {
+    return CachedPoiEntry(
+      id: data.id.present ? data.id.value : this.id,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      descricao: data.descricao.present ? data.descricao.value : this.descricao,
+      categoria: data.categoria.present ? data.categoria.value : this.categoria,
+      subcategoria: data.subcategoria.present
+          ? data.subcategoria.value
+          : this.subcategoria,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      morada: data.morada.present ? data.morada.value : this.morada,
+      cidade: data.cidade.present ? data.cidade.value : this.cidade,
+      codPostal: data.codPostal.present ? data.codPostal.value : this.codPostal,
+      pais: data.pais.present ? data.pais.value : this.pais,
+      telefone: data.telefone.present ? data.telefone.value : this.telefone,
+      email: data.email.present ? data.email.value : this.email,
+      website: data.website.present ? data.website.value : this.website,
+      idadeMin: data.idadeMin.present ? data.idadeMin.value : this.idadeMin,
+      idadeMax: data.idadeMax.present ? data.idadeMax.value : this.idadeMax,
+      preco: data.preco.present ? data.preco.value : this.preco,
+      isGratuito:
+          data.isGratuito.present ? data.isGratuito.value : this.isGratuito,
+      isAcessivel:
+          data.isAcessivel.present ? data.isAcessivel.value : this.isAcessivel,
+      duracao: data.duracao.present ? data.duracao.value : this.duracao,
+      horario: data.horario.present ? data.horario.value : this.horario,
+      tags: data.tags.present ? data.tags.value : this.tags,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedPoiEntry(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('descricao: $descricao, ')
+          ..write('categoria: $categoria, ')
+          ..write('subcategoria: $subcategoria, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('morada: $morada, ')
+          ..write('cidade: $cidade, ')
+          ..write('codPostal: $codPostal, ')
+          ..write('pais: $pais, ')
+          ..write('telefone: $telefone, ')
+          ..write('email: $email, ')
+          ..write('website: $website, ')
+          ..write('idadeMin: $idadeMin, ')
+          ..write('idadeMax: $idadeMax, ')
+          ..write('preco: $preco, ')
+          ..write('isGratuito: $isGratuito, ')
+          ..write('isAcessivel: $isAcessivel, ')
+          ..write('duracao: $duracao, ')
+          ..write('horario: $horario, ')
+          ..write('tags: $tags, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        id,
+        nome,
+        descricao,
+        categoria,
+        subcategoria,
+        latitude,
+        longitude,
+        morada,
+        cidade,
+        codPostal,
+        pais,
+        telefone,
+        email,
+        website,
+        idadeMin,
+        idadeMax,
+        preco,
+        isGratuito,
+        isAcessivel,
+        duracao,
+        horario,
+        tags,
+        updatedAt,
+        cachedAt
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedPoiEntry &&
+          other.id == this.id &&
+          other.nome == this.nome &&
+          other.descricao == this.descricao &&
+          other.categoria == this.categoria &&
+          other.subcategoria == this.subcategoria &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude &&
+          other.morada == this.morada &&
+          other.cidade == this.cidade &&
+          other.codPostal == this.codPostal &&
+          other.pais == this.pais &&
+          other.telefone == this.telefone &&
+          other.email == this.email &&
+          other.website == this.website &&
+          other.idadeMin == this.idadeMin &&
+          other.idadeMax == this.idadeMax &&
+          other.preco == this.preco &&
+          other.isGratuito == this.isGratuito &&
+          other.isAcessivel == this.isAcessivel &&
+          other.duracao == this.duracao &&
+          other.horario == this.horario &&
+          other.tags == this.tags &&
+          other.updatedAt == this.updatedAt &&
+          other.cachedAt == this.cachedAt);
+}
+
+class CachedPoisCompanion extends UpdateCompanion<CachedPoiEntry> {
+  final Value<int> id;
+  final Value<String> nome;
+  final Value<String?> descricao;
+  final Value<String> categoria;
+  final Value<String?> subcategoria;
+  final Value<double?> latitude;
+  final Value<double?> longitude;
+  final Value<String?> morada;
+  final Value<String?> cidade;
+  final Value<String?> codPostal;
+  final Value<String?> pais;
+  final Value<String?> telefone;
+  final Value<String?> email;
+  final Value<String?> website;
+  final Value<int?> idadeMin;
+  final Value<int?> idadeMax;
+  final Value<double?> preco;
+  final Value<bool?> isGratuito;
+  final Value<bool?> isAcessivel;
+  final Value<int?> duracao;
+  final Value<String?> horario;
+  final Value<String?> tags;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime> cachedAt;
+  const CachedPoisCompanion({
+    this.id = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.descricao = const Value.absent(),
+    this.categoria = const Value.absent(),
+    this.subcategoria = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
+    this.morada = const Value.absent(),
+    this.cidade = const Value.absent(),
+    this.codPostal = const Value.absent(),
+    this.pais = const Value.absent(),
+    this.telefone = const Value.absent(),
+    this.email = const Value.absent(),
+    this.website = const Value.absent(),
+    this.idadeMin = const Value.absent(),
+    this.idadeMax = const Value.absent(),
+    this.preco = const Value.absent(),
+    this.isGratuito = const Value.absent(),
+    this.isAcessivel = const Value.absent(),
+    this.duracao = const Value.absent(),
+    this.horario = const Value.absent(),
+    this.tags = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+  });
+  CachedPoisCompanion.insert({
+    this.id = const Value.absent(),
+    required String nome,
+    this.descricao = const Value.absent(),
+    required String categoria,
+    this.subcategoria = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
+    this.morada = const Value.absent(),
+    this.cidade = const Value.absent(),
+    this.codPostal = const Value.absent(),
+    this.pais = const Value.absent(),
+    this.telefone = const Value.absent(),
+    this.email = const Value.absent(),
+    this.website = const Value.absent(),
+    this.idadeMin = const Value.absent(),
+    this.idadeMax = const Value.absent(),
+    this.preco = const Value.absent(),
+    this.isGratuito = const Value.absent(),
+    this.isAcessivel = const Value.absent(),
+    this.duracao = const Value.absent(),
+    this.horario = const Value.absent(),
+    this.tags = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    required DateTime cachedAt,
+  })  : nome = Value(nome),
+        categoria = Value(categoria),
+        cachedAt = Value(cachedAt);
+  static Insertable<CachedPoiEntry> custom({
+    Expression<int>? id,
+    Expression<String>? nome,
+    Expression<String>? descricao,
+    Expression<String>? categoria,
+    Expression<String>? subcategoria,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
+    Expression<String>? morada,
+    Expression<String>? cidade,
+    Expression<String>? codPostal,
+    Expression<String>? pais,
+    Expression<String>? telefone,
+    Expression<String>? email,
+    Expression<String>? website,
+    Expression<int>? idadeMin,
+    Expression<int>? idadeMax,
+    Expression<double>? preco,
+    Expression<bool>? isGratuito,
+    Expression<bool>? isAcessivel,
+    Expression<int>? duracao,
+    Expression<String>? horario,
+    Expression<String>? tags,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? cachedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nome != null) 'nome': nome,
+      if (descricao != null) 'descricao': descricao,
+      if (categoria != null) 'categoria': categoria,
+      if (subcategoria != null) 'subcategoria': subcategoria,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (morada != null) 'morada': morada,
+      if (cidade != null) 'cidade': cidade,
+      if (codPostal != null) 'cod_postal': codPostal,
+      if (pais != null) 'pais': pais,
+      if (telefone != null) 'telefone': telefone,
+      if (email != null) 'email': email,
+      if (website != null) 'website': website,
+      if (idadeMin != null) 'idade_min': idadeMin,
+      if (idadeMax != null) 'idade_max': idadeMax,
+      if (preco != null) 'preco': preco,
+      if (isGratuito != null) 'is_gratuito': isGratuito,
+      if (isAcessivel != null) 'is_acessivel': isAcessivel,
+      if (duracao != null) 'duracao': duracao,
+      if (horario != null) 'horario': horario,
+      if (tags != null) 'tags': tags,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+    });
+  }
+
+  CachedPoisCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? nome,
+      Value<String?>? descricao,
+      Value<String>? categoria,
+      Value<String?>? subcategoria,
+      Value<double?>? latitude,
+      Value<double?>? longitude,
+      Value<String?>? morada,
+      Value<String?>? cidade,
+      Value<String?>? codPostal,
+      Value<String?>? pais,
+      Value<String?>? telefone,
+      Value<String?>? email,
+      Value<String?>? website,
+      Value<int?>? idadeMin,
+      Value<int?>? idadeMax,
+      Value<double?>? preco,
+      Value<bool?>? isGratuito,
+      Value<bool?>? isAcessivel,
+      Value<int?>? duracao,
+      Value<String?>? horario,
+      Value<String?>? tags,
+      Value<DateTime?>? updatedAt,
+      Value<DateTime>? cachedAt}) {
+    return CachedPoisCompanion(
+      id: id ?? this.id,
+      nome: nome ?? this.nome,
+      descricao: descricao ?? this.descricao,
+      categoria: categoria ?? this.categoria,
+      subcategoria: subcategoria ?? this.subcategoria,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      morada: morada ?? this.morada,
+      cidade: cidade ?? this.cidade,
+      codPostal: codPostal ?? this.codPostal,
+      pais: pais ?? this.pais,
+      telefone: telefone ?? this.telefone,
+      email: email ?? this.email,
+      website: website ?? this.website,
+      idadeMin: idadeMin ?? this.idadeMin,
+      idadeMax: idadeMax ?? this.idadeMax,
+      preco: preco ?? this.preco,
+      isGratuito: isGratuito ?? this.isGratuito,
+      isAcessivel: isAcessivel ?? this.isAcessivel,
+      duracao: duracao ?? this.duracao,
+      horario: horario ?? this.horario,
+      tags: tags ?? this.tags,
+      updatedAt: updatedAt ?? this.updatedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (descricao.present) {
+      map['descricao'] = Variable<String>(descricao.value);
+    }
+    if (categoria.present) {
+      map['categoria'] = Variable<String>(categoria.value);
+    }
+    if (subcategoria.present) {
+      map['subcategoria'] = Variable<String>(subcategoria.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
+    if (morada.present) {
+      map['morada'] = Variable<String>(morada.value);
+    }
+    if (cidade.present) {
+      map['cidade'] = Variable<String>(cidade.value);
+    }
+    if (codPostal.present) {
+      map['cod_postal'] = Variable<String>(codPostal.value);
+    }
+    if (pais.present) {
+      map['pais'] = Variable<String>(pais.value);
+    }
+    if (telefone.present) {
+      map['telefone'] = Variable<String>(telefone.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (website.present) {
+      map['website'] = Variable<String>(website.value);
+    }
+    if (idadeMin.present) {
+      map['idade_min'] = Variable<int>(idadeMin.value);
+    }
+    if (idadeMax.present) {
+      map['idade_max'] = Variable<int>(idadeMax.value);
+    }
+    if (preco.present) {
+      map['preco'] = Variable<double>(preco.value);
+    }
+    if (isGratuito.present) {
+      map['is_gratuito'] = Variable<bool>(isGratuito.value);
+    }
+    if (isAcessivel.present) {
+      map['is_acessivel'] = Variable<bool>(isAcessivel.value);
+    }
+    if (duracao.present) {
+      map['duracao'] = Variable<int>(duracao.value);
+    }
+    if (horario.present) {
+      map['horario'] = Variable<String>(horario.value);
+    }
+    if (tags.present) {
+      map['tags'] = Variable<String>(tags.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedPoisCompanion(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('descricao: $descricao, ')
+          ..write('categoria: $categoria, ')
+          ..write('subcategoria: $subcategoria, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('morada: $morada, ')
+          ..write('cidade: $cidade, ')
+          ..write('codPostal: $codPostal, ')
+          ..write('pais: $pais, ')
+          ..write('telefone: $telefone, ')
+          ..write('email: $email, ')
+          ..write('website: $website, ')
+          ..write('idadeMin: $idadeMin, ')
+          ..write('idadeMax: $idadeMax, ')
+          ..write('preco: $preco, ')
+          ..write('isGratuito: $isGratuito, ')
+          ..write('isAcessivel: $isAcessivel, ')
+          ..write('duracao: $duracao, ')
+          ..write('horario: $horario, ')
+          ..write('tags: $tags, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $FavoritesTable favorites = $FavoritesTable(this);
   late final $ReviewsTable reviews = $ReviewsTable(this);
+  late final $ClickHistoryTable clickHistory = $ClickHistoryTable(this);
+  late final $CachedPoisTable cachedPois = $CachedPoisTable(this);
   late final FavoritesDao favoritesDao = FavoritesDao(this as AppDatabase);
   late final ReviewsDao reviewsDao = ReviewsDao(this as AppDatabase);
+  late final ClickHistoryDao clickHistoryDao =
+      ClickHistoryDao(this as AppDatabase);
+  late final CachedPoisDao cachedPoisDao = CachedPoisDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [favorites, reviews];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [favorites, reviews, clickHistory, cachedPois];
 }
 
 typedef $$FavoritesTableCreateCompanionBuilder = FavoritesCompanion Function({
@@ -2289,6 +3557,585 @@ typedef $$ReviewsTableProcessedTableManager = ProcessedTableManager<
     (Review, BaseReferences<_$AppDatabase, $ReviewsTable, Review>),
     Review,
     PrefetchHooks Function()>;
+typedef $$ClickHistoryTableCreateCompanionBuilder = ClickHistoryCompanion
+    Function({
+  required int poiId,
+  required DateTime clickedAt,
+  Value<int> rowid,
+});
+typedef $$ClickHistoryTableUpdateCompanionBuilder = ClickHistoryCompanion
+    Function({
+  Value<int> poiId,
+  Value<DateTime> clickedAt,
+  Value<int> rowid,
+});
+
+class $$ClickHistoryTableFilterComposer
+    extends Composer<_$AppDatabase, $ClickHistoryTable> {
+  $$ClickHistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get poiId => $composableBuilder(
+      column: $table.poiId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get clickedAt => $composableBuilder(
+      column: $table.clickedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ClickHistoryTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClickHistoryTable> {
+  $$ClickHistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get poiId => $composableBuilder(
+      column: $table.poiId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get clickedAt => $composableBuilder(
+      column: $table.clickedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ClickHistoryTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClickHistoryTable> {
+  $$ClickHistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get poiId =>
+      $composableBuilder(column: $table.poiId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get clickedAt =>
+      $composableBuilder(column: $table.clickedAt, builder: (column) => column);
+}
+
+class $$ClickHistoryTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ClickHistoryTable,
+    ClickHistoryEntry,
+    $$ClickHistoryTableFilterComposer,
+    $$ClickHistoryTableOrderingComposer,
+    $$ClickHistoryTableAnnotationComposer,
+    $$ClickHistoryTableCreateCompanionBuilder,
+    $$ClickHistoryTableUpdateCompanionBuilder,
+    (
+      ClickHistoryEntry,
+      BaseReferences<_$AppDatabase, $ClickHistoryTable, ClickHistoryEntry>
+    ),
+    ClickHistoryEntry,
+    PrefetchHooks Function()> {
+  $$ClickHistoryTableTableManager(_$AppDatabase db, $ClickHistoryTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClickHistoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClickHistoryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClickHistoryTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> poiId = const Value.absent(),
+            Value<DateTime> clickedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ClickHistoryCompanion(
+            poiId: poiId,
+            clickedAt: clickedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int poiId,
+            required DateTime clickedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ClickHistoryCompanion.insert(
+            poiId: poiId,
+            clickedAt: clickedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ClickHistoryTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ClickHistoryTable,
+    ClickHistoryEntry,
+    $$ClickHistoryTableFilterComposer,
+    $$ClickHistoryTableOrderingComposer,
+    $$ClickHistoryTableAnnotationComposer,
+    $$ClickHistoryTableCreateCompanionBuilder,
+    $$ClickHistoryTableUpdateCompanionBuilder,
+    (
+      ClickHistoryEntry,
+      BaseReferences<_$AppDatabase, $ClickHistoryTable, ClickHistoryEntry>
+    ),
+    ClickHistoryEntry,
+    PrefetchHooks Function()>;
+typedef $$CachedPoisTableCreateCompanionBuilder = CachedPoisCompanion Function({
+  Value<int> id,
+  required String nome,
+  Value<String?> descricao,
+  required String categoria,
+  Value<String?> subcategoria,
+  Value<double?> latitude,
+  Value<double?> longitude,
+  Value<String?> morada,
+  Value<String?> cidade,
+  Value<String?> codPostal,
+  Value<String?> pais,
+  Value<String?> telefone,
+  Value<String?> email,
+  Value<String?> website,
+  Value<int?> idadeMin,
+  Value<int?> idadeMax,
+  Value<double?> preco,
+  Value<bool?> isGratuito,
+  Value<bool?> isAcessivel,
+  Value<int?> duracao,
+  Value<String?> horario,
+  Value<String?> tags,
+  Value<DateTime?> updatedAt,
+  required DateTime cachedAt,
+});
+typedef $$CachedPoisTableUpdateCompanionBuilder = CachedPoisCompanion Function({
+  Value<int> id,
+  Value<String> nome,
+  Value<String?> descricao,
+  Value<String> categoria,
+  Value<String?> subcategoria,
+  Value<double?> latitude,
+  Value<double?> longitude,
+  Value<String?> morada,
+  Value<String?> cidade,
+  Value<String?> codPostal,
+  Value<String?> pais,
+  Value<String?> telefone,
+  Value<String?> email,
+  Value<String?> website,
+  Value<int?> idadeMin,
+  Value<int?> idadeMax,
+  Value<double?> preco,
+  Value<bool?> isGratuito,
+  Value<bool?> isAcessivel,
+  Value<int?> duracao,
+  Value<String?> horario,
+  Value<String?> tags,
+  Value<DateTime?> updatedAt,
+  Value<DateTime> cachedAt,
+});
+
+class $$CachedPoisTableFilterComposer
+    extends Composer<_$AppDatabase, $CachedPoisTable> {
+  $$CachedPoisTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nome => $composableBuilder(
+      column: $table.nome, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get descricao => $composableBuilder(
+      column: $table.descricao, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get categoria => $composableBuilder(
+      column: $table.categoria, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get subcategoria => $composableBuilder(
+      column: $table.subcategoria, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get latitude => $composableBuilder(
+      column: $table.latitude, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get longitude => $composableBuilder(
+      column: $table.longitude, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get morada => $composableBuilder(
+      column: $table.morada, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cidade => $composableBuilder(
+      column: $table.cidade, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get codPostal => $composableBuilder(
+      column: $table.codPostal, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pais => $composableBuilder(
+      column: $table.pais, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get telefone => $composableBuilder(
+      column: $table.telefone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get email => $composableBuilder(
+      column: $table.email, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get website => $composableBuilder(
+      column: $table.website, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get idadeMin => $composableBuilder(
+      column: $table.idadeMin, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get idadeMax => $composableBuilder(
+      column: $table.idadeMax, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get preco => $composableBuilder(
+      column: $table.preco, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isGratuito => $composableBuilder(
+      column: $table.isGratuito, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isAcessivel => $composableBuilder(
+      column: $table.isAcessivel, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get duracao => $composableBuilder(
+      column: $table.duracao, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get horario => $composableBuilder(
+      column: $table.horario, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get tags => $composableBuilder(
+      column: $table.tags, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+      column: $table.cachedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$CachedPoisTableOrderingComposer
+    extends Composer<_$AppDatabase, $CachedPoisTable> {
+  $$CachedPoisTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+      column: $table.nome, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get descricao => $composableBuilder(
+      column: $table.descricao, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoria => $composableBuilder(
+      column: $table.categoria, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get subcategoria => $composableBuilder(
+      column: $table.subcategoria,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get latitude => $composableBuilder(
+      column: $table.latitude, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get longitude => $composableBuilder(
+      column: $table.longitude, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get morada => $composableBuilder(
+      column: $table.morada, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cidade => $composableBuilder(
+      column: $table.cidade, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get codPostal => $composableBuilder(
+      column: $table.codPostal, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pais => $composableBuilder(
+      column: $table.pais, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get telefone => $composableBuilder(
+      column: $table.telefone, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get email => $composableBuilder(
+      column: $table.email, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get website => $composableBuilder(
+      column: $table.website, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get idadeMin => $composableBuilder(
+      column: $table.idadeMin, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get idadeMax => $composableBuilder(
+      column: $table.idadeMax, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get preco => $composableBuilder(
+      column: $table.preco, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isGratuito => $composableBuilder(
+      column: $table.isGratuito, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isAcessivel => $composableBuilder(
+      column: $table.isAcessivel, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get duracao => $composableBuilder(
+      column: $table.duracao, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get horario => $composableBuilder(
+      column: $table.horario, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get tags => $composableBuilder(
+      column: $table.tags, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+      column: $table.cachedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CachedPoisTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CachedPoisTable> {
+  $$CachedPoisTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<String> get descricao =>
+      $composableBuilder(column: $table.descricao, builder: (column) => column);
+
+  GeneratedColumn<String> get categoria =>
+      $composableBuilder(column: $table.categoria, builder: (column) => column);
+
+  GeneratedColumn<String> get subcategoria => $composableBuilder(
+      column: $table.subcategoria, builder: (column) => column);
+
+  GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
+
+  GeneratedColumn<String> get morada =>
+      $composableBuilder(column: $table.morada, builder: (column) => column);
+
+  GeneratedColumn<String> get cidade =>
+      $composableBuilder(column: $table.cidade, builder: (column) => column);
+
+  GeneratedColumn<String> get codPostal =>
+      $composableBuilder(column: $table.codPostal, builder: (column) => column);
+
+  GeneratedColumn<String> get pais =>
+      $composableBuilder(column: $table.pais, builder: (column) => column);
+
+  GeneratedColumn<String> get telefone =>
+      $composableBuilder(column: $table.telefone, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get website =>
+      $composableBuilder(column: $table.website, builder: (column) => column);
+
+  GeneratedColumn<int> get idadeMin =>
+      $composableBuilder(column: $table.idadeMin, builder: (column) => column);
+
+  GeneratedColumn<int> get idadeMax =>
+      $composableBuilder(column: $table.idadeMax, builder: (column) => column);
+
+  GeneratedColumn<double> get preco =>
+      $composableBuilder(column: $table.preco, builder: (column) => column);
+
+  GeneratedColumn<bool> get isGratuito => $composableBuilder(
+      column: $table.isGratuito, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAcessivel => $composableBuilder(
+      column: $table.isAcessivel, builder: (column) => column);
+
+  GeneratedColumn<int> get duracao =>
+      $composableBuilder(column: $table.duracao, builder: (column) => column);
+
+  GeneratedColumn<String> get horario =>
+      $composableBuilder(column: $table.horario, builder: (column) => column);
+
+  GeneratedColumn<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$CachedPoisTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CachedPoisTable,
+    CachedPoiEntry,
+    $$CachedPoisTableFilterComposer,
+    $$CachedPoisTableOrderingComposer,
+    $$CachedPoisTableAnnotationComposer,
+    $$CachedPoisTableCreateCompanionBuilder,
+    $$CachedPoisTableUpdateCompanionBuilder,
+    (
+      CachedPoiEntry,
+      BaseReferences<_$AppDatabase, $CachedPoisTable, CachedPoiEntry>
+    ),
+    CachedPoiEntry,
+    PrefetchHooks Function()> {
+  $$CachedPoisTableTableManager(_$AppDatabase db, $CachedPoisTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CachedPoisTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CachedPoisTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CachedPoisTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> nome = const Value.absent(),
+            Value<String?> descricao = const Value.absent(),
+            Value<String> categoria = const Value.absent(),
+            Value<String?> subcategoria = const Value.absent(),
+            Value<double?> latitude = const Value.absent(),
+            Value<double?> longitude = const Value.absent(),
+            Value<String?> morada = const Value.absent(),
+            Value<String?> cidade = const Value.absent(),
+            Value<String?> codPostal = const Value.absent(),
+            Value<String?> pais = const Value.absent(),
+            Value<String?> telefone = const Value.absent(),
+            Value<String?> email = const Value.absent(),
+            Value<String?> website = const Value.absent(),
+            Value<int?> idadeMin = const Value.absent(),
+            Value<int?> idadeMax = const Value.absent(),
+            Value<double?> preco = const Value.absent(),
+            Value<bool?> isGratuito = const Value.absent(),
+            Value<bool?> isAcessivel = const Value.absent(),
+            Value<int?> duracao = const Value.absent(),
+            Value<String?> horario = const Value.absent(),
+            Value<String?> tags = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<DateTime> cachedAt = const Value.absent(),
+          }) =>
+              CachedPoisCompanion(
+            id: id,
+            nome: nome,
+            descricao: descricao,
+            categoria: categoria,
+            subcategoria: subcategoria,
+            latitude: latitude,
+            longitude: longitude,
+            morada: morada,
+            cidade: cidade,
+            codPostal: codPostal,
+            pais: pais,
+            telefone: telefone,
+            email: email,
+            website: website,
+            idadeMin: idadeMin,
+            idadeMax: idadeMax,
+            preco: preco,
+            isGratuito: isGratuito,
+            isAcessivel: isAcessivel,
+            duracao: duracao,
+            horario: horario,
+            tags: tags,
+            updatedAt: updatedAt,
+            cachedAt: cachedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String nome,
+            Value<String?> descricao = const Value.absent(),
+            required String categoria,
+            Value<String?> subcategoria = const Value.absent(),
+            Value<double?> latitude = const Value.absent(),
+            Value<double?> longitude = const Value.absent(),
+            Value<String?> morada = const Value.absent(),
+            Value<String?> cidade = const Value.absent(),
+            Value<String?> codPostal = const Value.absent(),
+            Value<String?> pais = const Value.absent(),
+            Value<String?> telefone = const Value.absent(),
+            Value<String?> email = const Value.absent(),
+            Value<String?> website = const Value.absent(),
+            Value<int?> idadeMin = const Value.absent(),
+            Value<int?> idadeMax = const Value.absent(),
+            Value<double?> preco = const Value.absent(),
+            Value<bool?> isGratuito = const Value.absent(),
+            Value<bool?> isAcessivel = const Value.absent(),
+            Value<int?> duracao = const Value.absent(),
+            Value<String?> horario = const Value.absent(),
+            Value<String?> tags = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            required DateTime cachedAt,
+          }) =>
+              CachedPoisCompanion.insert(
+            id: id,
+            nome: nome,
+            descricao: descricao,
+            categoria: categoria,
+            subcategoria: subcategoria,
+            latitude: latitude,
+            longitude: longitude,
+            morada: morada,
+            cidade: cidade,
+            codPostal: codPostal,
+            pais: pais,
+            telefone: telefone,
+            email: email,
+            website: website,
+            idadeMin: idadeMin,
+            idadeMax: idadeMax,
+            preco: preco,
+            isGratuito: isGratuito,
+            isAcessivel: isAcessivel,
+            duracao: duracao,
+            horario: horario,
+            tags: tags,
+            updatedAt: updatedAt,
+            cachedAt: cachedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CachedPoisTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CachedPoisTable,
+    CachedPoiEntry,
+    $$CachedPoisTableFilterComposer,
+    $$CachedPoisTableOrderingComposer,
+    $$CachedPoisTableAnnotationComposer,
+    $$CachedPoisTableCreateCompanionBuilder,
+    $$CachedPoisTableUpdateCompanionBuilder,
+    (
+      CachedPoiEntry,
+      BaseReferences<_$AppDatabase, $CachedPoisTable, CachedPoiEntry>
+    ),
+    CachedPoiEntry,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2297,4 +4144,8 @@ class $AppDatabaseManager {
       $$FavoritesTableTableManager(_db, _db.favorites);
   $$ReviewsTableTableManager get reviews =>
       $$ReviewsTableTableManager(_db, _db.reviews);
+  $$ClickHistoryTableTableManager get clickHistory =>
+      $$ClickHistoryTableTableManager(_db, _db.clickHistory);
+  $$CachedPoisTableTableManager get cachedPois =>
+      $$CachedPoisTableTableManager(_db, _db.cachedPois);
 }

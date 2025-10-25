@@ -13,17 +13,24 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:drift/native.dart';
 import '../models/favorite.dart';
 import '../models/review.dart';
+import '../models/click_history.dart';
+import '../models/cached_poi.dart';
 import '../daos/favorites_dao.dart';
 import '../daos/reviews_dao.dart';
+import '../daos/click_history_dao.dart';
+import '../daos/cached_pois_dao.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Favorites, Reviews], daos: [FavoritesDao, ReviewsDao])
+@DriftDatabase(
+  tables: [Favorites, Reviews, ClickHistory, CachedPois],
+  daos: [FavoritesDao, ReviewsDao, ClickHistoryDao, CachedPoisDao],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3; // Incrementar a versão
+  int get schemaVersion => 5; // Incrementar a versão
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -33,10 +40,14 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(reviews);
           }
           if (from < 3) {
-            // A tabela de favoritos foi alterada significativamente.
-            // A estratégia mais simples é apagá-la e recriá-la.
             await m.deleteTable('favorites');
             await m.createTable(favorites);
+          }
+          if (from < 4) {
+            await m.createTable(clickHistory);
+          }
+          if (from < 5) {
+            await m.createTable(cachedPois);
           }
         },
       );
