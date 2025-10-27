@@ -50,6 +50,11 @@ final cachedPoisDaoProvider = Provider<CachedPoisDao>((ref) {
   return database.cachedPoisDao;
 });
 
+final essentialPoisDaoProvider = Provider<EssentialPoisDao>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return database.essentialPoisDao;
+});
+
 // Provider para repositório de favoritos
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   final favoritesDao = ref.watch(favoritesDaoProvider);

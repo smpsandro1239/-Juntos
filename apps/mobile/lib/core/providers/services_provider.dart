@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mobile/core/services/weather/weather_service.dart';
 import 'package:mobile/core/services/analytics/analytics_service.dart';
+import 'package:mobile/core/services/bundle/bundle_download_service.dart';
 
 part 'services_provider.g.dart';
 
@@ -26,6 +27,11 @@ WeatherService weatherService(WeatherServiceRef ref) {
 @riverpod
 AnalyticsService analyticsService(AnalyticsServiceRef ref) {
   return AnalyticsService();
+}
+
+@riverpod
+BundleDownloadService bundleDownloadService(BundleDownloadServiceRef ref) {
+  return BundleDownloadService(ref);
 }
 
 // Provider para aceder à chave da API de forma segura

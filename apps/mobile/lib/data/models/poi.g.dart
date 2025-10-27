@@ -39,6 +39,8 @@ Poi _$PoiFromJson(Map<String, dynamic> json) => Poi(
       atualizadoEm: json['atualizadoEm'] == null
           ? null
           : DateTime.parse(json['atualizadoEm'] as String),
+      fotos:
+          (json['fotos'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$PoiToJson(Poi instance) => <String, dynamic>{
@@ -70,4 +72,5 @@ Map<String, dynamic> _$PoiToJson(Poi instance) => <String, dynamic>{
       'ativo': instance.ativo,
       'criadoEm': instance.criadoEm?.toIso8601String(),
       'atualizadoEm': instance.atualizadoEm?.toIso8601String(),
+      'fotos': instance.fotos,
     };

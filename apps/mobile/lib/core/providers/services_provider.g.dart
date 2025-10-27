@@ -50,6 +50,24 @@ final analyticsServiceProvider = AutoDisposeProvider<AnalyticsService>.internal(
 );
 
 typedef AnalyticsServiceRef = AutoDisposeProviderRef<AnalyticsService>;
+String _$bundleDownloadServiceHash() =>
+    r'19454d9826a5aa8e69e94cdafb327e34ddb7329f';
+
+/// See also [bundleDownloadService].
+@ProviderFor(bundleDownloadService)
+final bundleDownloadServiceProvider =
+    AutoDisposeProvider<BundleDownloadService>.internal(
+  bundleDownloadService,
+  name: r'bundleDownloadServiceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$bundleDownloadServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef BundleDownloadServiceRef
+    = AutoDisposeProviderRef<BundleDownloadService>;
 String _$openWeatherApiKeyHash() => r'b7c6c4dc4ae25e3dc1cf03b8440883c7e3578414';
 
 /// See also [openWeatherApiKey].

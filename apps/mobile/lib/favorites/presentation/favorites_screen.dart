@@ -87,11 +87,15 @@ class FavoritesScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  ref.read(favoritesRepositoryProvider).toggleFavorite(poi);
-                },
-                icon: const Icon(Icons.favorite, color: Colors.red),
+              Semantics(
+                label: "Remover dos favoritos",
+                button: true,
+                child: IconButton(
+                  onPressed: () {
+                    ref.read(favoritesRepositoryProvider).toggleFavorite(poi);
+                  },
+                  icon: const Icon(Icons.favorite, color: Colors.red),
+                ),
               ),
             ],
           ),

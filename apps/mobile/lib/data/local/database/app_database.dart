@@ -15,22 +15,24 @@ import '../models/favorite.dart';
 import '../models/review.dart';
 import '../models/click_history.dart';
 import '../models/cached_poi.dart';
+import '../models/essential_poi.dart';
 import '../daos/favorites_dao.dart';
 import '../daos/reviews_dao.dart';
 import '../daos/click_history_dao.dart';
 import '../daos/cached_pois_dao.dart';
+import '../daos/essential_pois_dao.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Favorites, Reviews, ClickHistory, CachedPois],
-  daos: [FavoritesDao, ReviewsDao, ClickHistoryDao, CachedPoisDao],
+  tables: [Favorites, Reviews, ClickHistory, CachedPois, EssentialPois],
+  daos: [FavoritesDao, ReviewsDao, ClickHistoryDao, CachedPoisDao, EssentialPoisDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5; // Incrementar a versão
+  int get schemaVersion => 6; // Incrementar a versão
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +50,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 5) {
             await m.createTable(cachedPois);
+          }
+          if (from < 6) {
+            await m.createTable(essentialPois);
           }
         },
       );

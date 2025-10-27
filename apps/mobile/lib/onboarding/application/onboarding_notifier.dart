@@ -33,11 +33,14 @@ class OnboardingState {
   }
 }
 
+import 'package:mobile/core/providers/services_provider.dart';
+
 // Notifier
 class OnboardingNotifier extends StateNotifier<OnboardingState> {
   final SharedPreferences _prefs;
+  final Ref _ref;
 
-  OnboardingNotifier(this._prefs) : super(OnboardingState()) {
+  OnboardingNotifier(this._prefs, this._ref) : super(OnboardingState()) {
     _loadState();
   }
 
@@ -65,11 +68,14 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   void completeOnboarding() {
     state = state.copyWith(isCompleted: true);
     _prefs.setBool('onboarding_completed', true);
+
+    // Disparar o download do bundle em background
+    _ref.read(bundleDownloadServiceProvider).downloadAndStoreBundle();
   }
 }
 
 // Provider
 final onboardingNotifierProvider = StateNotifierProvider<OnboardingNotifier, OnboardingState>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return OnboardingNotifier(prefs);
+  return OnboardingNotifier(prefs, ref);
 });

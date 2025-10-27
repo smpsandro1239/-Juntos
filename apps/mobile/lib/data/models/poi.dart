@@ -39,6 +39,7 @@ class Poi extends Equatable {
   final bool ativo;
   final DateTime? criadoEm;
   final DateTime? atualizadoEm;
+  final List<String>? fotos;
 
   const Poi({
     this.id,
@@ -69,6 +70,7 @@ class Poi extends Equatable {
     required this.ativo,
     this.criadoEm,
     this.atualizadoEm,
+    this.fotos,
   });
 
   factory Poi.fromJson(Map<String, dynamic> json) => _$PoiFromJson(json);
@@ -96,6 +98,6 @@ class Poi extends Equatable {
     codigoPostal, cidade, distrito, telefone, website,
     email, horarioAbertura, horarioFecho, acessibilidade,
     estacionamento, wc, cafetaria, interior, exterior,
-    ativo, criadoEm, atualizadoEm
+    ativo, criadoEm, atualizadoEm, fotos
   ];
 }

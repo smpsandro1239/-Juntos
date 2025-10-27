@@ -6,6 +6,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mobile/core/providers/cache_manager.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile/core/providers/services_provider.dart';
 import '../../core/providers/api_provider.dart';
@@ -94,11 +96,29 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             // Opcional: mostrar uma mensagem a dizer que os dados são da cache
           });
         } else {
-          // Se a cache também estiver vazia, mostra o erro original
-          setState(() {
-            _errorMessage = 'Sem ligação à Internet e sem dados em cache.\n$e';
-            _isLoading = false;
-          });
+          // Se a cache normal estiver vazia, tenta o bundle essencial
+          final essentialPoisDao = ref.read(essentialPoisDaoProvider);
+          final essentialPois = await essentialPoisDao.getAllEssentialPois();
+
+          if (essentialPois.isNotEmpty) {
+            // Analytics
+            ref.read(analyticsServiceProvider).logOfflineModeTrigger();
+
+            // Ordena os POIs do bundle também
+            final recommendationService = ref.read(recommendationServiceProvider);
+            final sortedPois = await recommendationService.sortPois(essentialPois);
+            setState(() {
+              _pois = sortedPois;
+              _isLoading = false;
+              // Opcional: mostrar uma mensagem a dizer que os dados são do bundle offline
+            });
+          } else {
+            // Se tudo falhar, mostra o erro
+            setState(() {
+              _errorMessage = 'Sem ligação à Internet e sem dados em cache.\n$e';
+              _isLoading = false;
+            });
+          }
         }
       } catch (cacheError) {
         // Se a leitura da cache falhar, mostra ambos os erros
@@ -125,13 +145,16 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           // Barra de pesquisa
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SearchBar(
-              controller: _searchController,
-              hintText: "Pesquisar", // l10n.pesquisar,
-              leading: const Icon(Icons.search),
-              onSubmitted: (value) {
-                // _searchPois(value);
-              },
+            child: Semantics(
+              label: "Campo de pesquisa de atividades",
+              child: SearchBar(
+                controller: _searchController,
+                hintText: "Pesquisar", // l10n.pesquisar,
+                leading: const Icon(Icons.search),
+                onSubmitted: (value) {
+                  // _searchPois(value);
+                },
+              ),
             ),
           ),
 
@@ -146,31 +169,43 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
-                    FilterChip(
-                      label: const Text("Grátis"),
-                      selected: filterState.isFree ?? false,
-                      onSelected: (_) {
-                        filterNotifier.toggleFree();
-                        _loadNearbyPois();
-                      },
+                    Semantics(
+                      label: "Filtro de atividades gratuitas",
+                      checked: filterState.isFree ?? false,
+                      child: FilterChip(
+                        label: const Text("Grátis"),
+                        selected: filterState.isFree ?? false,
+                        onSelected: (_) {
+                          filterNotifier.toggleFree();
+                          _loadNearbyPois();
+                        },
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    FilterChip(
-                      label: const Text("Interior"),
-                      selected: filterState.isIndoor == true,
-                      onSelected: (_) {
-                        filterNotifier.toggleIndoor();
-                        _loadNearbyPois();
-                      },
+                    Semantics(
+                      label: "Filtro de atividades de interior",
+                      checked: filterState.isIndoor == true,
+                      child: FilterChip(
+                        label: const Text("Interior"),
+                        selected: filterState.isIndoor == true,
+                        onSelected: (_) {
+                          filterNotifier.toggleIndoor();
+                          _loadNearbyPois();
+                        },
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    FilterChip(
-                      label: const Text("Exterior"),
-                      selected: filterState.isIndoor == false,
-                      onSelected: (_) {
-                        filterNotifier.toggleOutdoor();
-                        _loadNearbyPois();
-                      },
+                    Semantics(
+                      label: "Filtro de atividades de exterior",
+                      checked: filterState.isIndoor == false,
+                      child: FilterChip(
+                        label: const Text("Exterior"),
+                        selected: filterState.isIndoor == false,
+                        onSelected: (_) {
+                          filterNotifier.toggleOutdoor();
+                          _loadNearbyPois();
+                        },
+                      ),
                     ),
                   ],
                 );
@@ -263,29 +298,41 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildPoiGridCard(Poi poi) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          // Analytics
-          ref.read(analyticsServiceProvider).logActivityTap(poi.id, poi.nome);
-          // Registar o clique para o algoritmo
-          ref.read(clickHistoryDaoProvider).addClick(poi.id);
+    return Semantics(
+      label: "Atividade: ${poi.nome}, ${poi.cidade ?? ''}",
+      hint: "Toque para ver mais detalhes",
+      button: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            // Analytics
+            ref.read(analyticsServiceProvider).logActivityTap(poi.id, poi.nome);
+            // Registar o clique para o algoritmo
+            ref.read(clickHistoryDaoProvider).addClick(poi.id);
 
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PoiDetailsScreen(poi: poi),
-            ),
-          );
-        },
-        child: Column(
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PoiDetailsScreen(poi: poi),
+              ),
+            );
+          },
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: Container(
-                color: Colors.grey[300],
-                child: const Icon(Icons.image, color: Colors.grey),
+              child: CachedNetworkImage(
+                cacheManager: ref.watch(imageCacheManagerProvider),
+                imageUrl: poi.fotos?.first ?? 'https://via.placeholder.com/300x200',
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[300],
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.error, color: Colors.grey),
+                ),
               ),
             ),
             Padding(
@@ -312,38 +359,50 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildPoiCard(Poi poi) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          // Analytics
-          ref.read(analyticsServiceProvider).logActivityTap(poi.id, poi.nome);
-          // Registar o clique para o algoritmo
-          ref.read(clickHistoryDaoProvider).addClick(poi.id);
+    return Semantics(
+      label: "Atividade: ${poi.nome}, ${poi.cidade ?? ''}",
+      hint: "Toque para ver mais detalhes",
+      button: true,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: InkWell(
+          onTap: () {
+            // Analytics
+            ref.read(analyticsServiceProvider).logActivityTap(poi.id, poi.nome);
+            // Registar o clique para o algoritmo
+            ref.read(clickHistoryDaoProvider).addClick(poi.id);
 
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PoiDetailsScreen(poi: poi),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PoiDetailsScreen(poi: poi),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: CachedNetworkImage(
+                  cacheManager: ref.watch(imageCacheManagerProvider),
+                  imageUrl: poi.fotos?.first ?? 'https://via.placeholder.com/150',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[300],
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error, color: Colors.grey),
+                  ),
                 ),
-                child: const Icon(Icons.image, color: Colors.grey),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -374,7 +433,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   @override

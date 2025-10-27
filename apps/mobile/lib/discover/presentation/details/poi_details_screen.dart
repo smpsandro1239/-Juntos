@@ -7,7 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:mobile/core/providers/cache_manager.dart';
 import '../../../data/models/poi.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/services_provider.dart';
@@ -164,35 +166,35 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
               ),
               background: Transform.translate(
                 offset: Offset(0, _parallaxOffset),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        theme.primaryColor,
-                        theme.primaryColor.withOpacity(0.7),
-                      ],
-                    ),
+                child: CachedNetworkImage(
+                  cacheManager: ref.watch(imageCacheManagerProvider),
+                  imageUrl: _poi.fotos?.first ?? 'https://via.placeholder.com/600x400',
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[300],
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 80,
-                      color: Colors.white54,
-                    ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error, color: Colors.grey),
                   ),
                 ),
               ),
             ),
             actions: [
-              _FavoriteButton(
-                poi: _poi,
-                onToggle: _toggleFavorite,
+              Semantics(
+                label: "Adicionar aos favoritos",
+                child: _FavoriteButton(
+                  poi: _poi,
+                  onToggle: _toggleFavorite,
+                ),
               ),
-              IconButton(
-                onPressed: _sharePoi,
-                icon: const Icon(Icons.share, color: Colors.white),
+              Semantics(
+                label: "Partilhar atividade",
+                button: true,
+                child: IconButton(
+                  onPressed: _sharePoi,
+                  icon: const Icon(Icons.share, color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -382,24 +384,30 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
         Row(
           children: [
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _openInMaps,
-                icon: const Icon(Icons.map),
-                label: const Text('Ver no Mapa'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Semantics(
+                label: "Ver a localização da atividade no mapa",
+                child: ElevatedButton.icon(
+                  onPressed: _openInMaps,
+                  icon: const Icon(Icons.map),
+                  label: const Text('Ver no Mapa'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 12),
             if (_poi.telefone != null && _poi.telefone!.isNotEmpty)
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _callPhone,
-                  icon: const Icon(Icons.phone),
-                  label: const Text('Ligar'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Semantics(
+                  label: "Ligar para o número de telefone da atividade",
+                  child: OutlinedButton.icon(
+                    onPressed: _callPhone,
+                    icon: const Icon(Icons.phone),
+                    label: const Text('Ligar'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
               ),
@@ -407,12 +415,15 @@ class _PoiDetailsScreenState extends ConsumerState<PoiDetailsScreen> {
         ),
         if (_poi.website != null && _poi.website!.isNotEmpty) ...[
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: _openWebsite,
-            icon: const Icon(Icons.web),
-            label: const Text('Visitar Website'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+          Semantics(
+            label: "Visitar o website da atividade",
+            child: OutlinedButton.icon(
+              onPressed: _openWebsite,
+              icon: const Icon(Icons.web),
+              label: const Text('Visitar Website'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ),
         ],
