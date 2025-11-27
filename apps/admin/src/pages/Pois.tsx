@@ -6,32 +6,21 @@
 
 import { Add, Delete, Edit, Visibility } from '@mui/icons-material';
 import {
-  Alert,
-  Box,
-  Button,
-  Paper,
-  Snackbar,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Paper,
+    Snackbar,
+    Stack,
+    TextField,
+    Typography
 } from '@mui/material';
-import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { DataGrid, GridActionsCellItem, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { useState } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, Stack } from '@mui/material';
 import PoiForm from '../components/PoiForm';
-import { poisApi, PaginatedResult } from '../services/api';
-
-interface Poi {
-  id: number;
-  nome: string;
-  categoria: string;
-  cidade: string;
-  distrito: string;
-  precoMin: number;
-  precoMax: number;
-  ativo: boolean;
-  criadoEm: string;
-}
+import { PaginatedResult, Poi, poisApi } from '../services/api';
 
 const columns = (handleView: (id: number) => void, handleEdit: (id: number) => void, handleDelete: (id: number) => void): GridColDef[] => [
   { field: 'id', headerName: 'ID', width: 70 },
@@ -89,8 +78,6 @@ const handleView = (id: number) => {
   // TODO: Implementar visualização detalhada
 };
 
-// These handler factories will be used inside the component where state/hooks are available
-
 export default function Pois() {
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
@@ -102,8 +89,11 @@ export default function Pois() {
   });
 
   // Server-side pagination state
-  const [page, setPage] = useState<number>(0); // 0-based
-  const [pageSize, setPageSize] = useState<number>(25);
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: 0,
+    pageSize: 25,
+  });
+
   const [search, setSearch] = useState<string>('');
   const [categoriaFilter, setCategoriaFilter] = useState<string>('');
   const [idadeMinFilter, setIdadeMinFilter] = useState<number | ''>('');
@@ -113,9 +103,19 @@ export default function Pois() {
   const [raioFilter, setRaioFilter] = useState<number | ''>('');
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['pois', 'paginated', page, pageSize, search, categoriaFilter, idadeMinFilter, idadeMaxFilter, latFilter, lngFilter, raioFilter],
-    queryFn: () => poisApi.getPaginated(page, pageSize, search, categoriaFilter, idadeMinFilter === '' ? undefined : (idadeMinFilter as number), idadeMaxFilter === '' ? undefined : (idadeMaxFilter as number), latFilter === '' ? undefined : (latFilter as number), lngFilter === '' ? undefined : (lngFilter as number), raioFilter === '' ? undefined : (raioFilter as number)).then((res: AxiosResponse<PaginatedResult<Poi>>) => res.data),
-    keepPreviousData: true,
+    queryKey: ['pois', 'paginated', paginationModel.page, paginationModel.pageSize, search, categoriaFilter, idadeMinFilter, idadeMaxFilter, latFilter, lngFilter, raioFilter],
+    queryFn: () => poisApi.getPaginated(
+      paginationModel.page,
+      paginationModel.pageSize,
+      search,
+      categoriaFilter,
+      idadeMinFilter === '' ? undefined : (idadeMinFilter as number),
+      idadeMaxFilter === '' ? undefined : (idadeMaxFilter as number),
+      latFilter === '' ? undefined : (latFilter as number),
+      lngFilter === '' ? undefined : (lngFilter as number),
+      raioFilter === '' ? undefined : (raioFilter as number)
+    ).then((res: AxiosResponse<PaginatedResult<Poi>>) => res.data),
+    placeholderData: keepPreviousData,
   });
 
   const pois = data?.items || [];
@@ -164,15 +164,6 @@ export default function Pois() {
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize);
-    setPage(0);
-  };
-
   if (error) {
     return (
       <Box>
@@ -185,8 +176,8 @@ export default function Pois() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+      <Box sx={{ display: 'flex' }}>
+        <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
           Pontos de Interesse
         </Typography>
         <Button
@@ -198,7 +189,7 @@ export default function Pois() {
         </Button>
       </Box>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 2, mt: 3 }}>
         <TextField label="Pesquisar" variant="outlined" size="small" value={search} onChange={e => setSearch(e.target.value)} />
         <TextField label="Categoria" variant="outlined" size="small" value={categoriaFilter} onChange={e => setCategoriaFilter(e.target.value)} />
         <TextField label="Idade Mín" variant="outlined" size="small" type="number" value={idadeMinFilter} onChange={e => setIdadeMinFilter(e.target.value === '' ? '' : Number(e.target.value))} />
@@ -213,14 +204,11 @@ export default function Pois() {
           rows={pois}
           columns={columns(handleView, handleEdit, handleDelete)}
           loading={isLoading}
-          pagination
           paginationMode="server"
           rowCount={total}
           pageSizeOptions={[25, 50, 100]}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
           checkboxSelection
           disableRowSelectionOnClick
           localeText={{
