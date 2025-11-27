@@ -4,18 +4,19 @@
 // Autor: (+JUNTOS team)
 // Locale: pt_PT
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Box } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { ptPT } from '@mui/material/locale';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import Sidebar from './components/Sidebar';
-import Pois from './pages/Pois';
-import Events from './pages/Events';
-import Users from './pages/Users';
+import Layout from './components/Layout';
+import RequireAuth from './components/RequireAuth';
 import Dashboard from './pages/Dashboard';
+import Events from './pages/Events';
+import LoginPage from './pages/LoginPage';
+import Pois from './pages/Pois';
+import Users from './pages/Users';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,17 +51,16 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
-          <Box sx={{ display: 'flex' }}>
-            <Sidebar />
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/pois" element={<Pois />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/users" element={<Users />} />
-              </Routes>
-            </Box>
-          </Box>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+
+            <Route element={<RequireAuth><Layout /></RequireAuth>}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/pois" element={<Pois />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/users" element={<Users />} />
+            </Route>
+          </Routes>
         </Router>
       </ThemeProvider>
     </QueryClientProvider>
