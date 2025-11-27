@@ -24,6 +24,7 @@ import pt.juntos.core.payload.SignupRequest
 import pt.juntos.core.repository.UserRepository
 import pt.juntos.core.security.JwtUtils
 import pt.juntos.core.security.services.UserDetailsImpl
+import pt.juntos.core.service.UserService
 import reactor.core.publisher.Mono
 
 @RestController
@@ -31,8 +32,7 @@ import reactor.core.publisher.Mono
 @Tag(name = "Authentication", description = "Endpoints de autenticação")
 class AuthController(
     private val authenticationManager: AuthenticationManager,
-    private val userRepository: UserRepository,
-    private val encoder: PasswordEncoder,
+    private val userService: UserService,
     private val jwtUtils: JwtUtils
 ) {
 
@@ -63,21 +63,13 @@ class AuthController(
     @PostMapping("/register")
     @Operation(summary = "Registo de utilizador", description = "Regista novo utilizador na plataforma")
     fun registerUser(@Valid @RequestBody signUpRequest: SignupRequest): Mono<ResponseEntity<MessageResponse>> {
-        return userRepository.existsByEmail(signUpRequest.email)
+        return userService.existsByEmail(signUpRequest.email)
             .flatMap { exists ->
                 if (exists) {
                     Mono.just(ResponseEntity.badRequest()
                         .body(MessageResponse("Erro: Email já está em uso!")))
                 } else {
-                    val user = User(
-                        nome = signUpRequest.nome,
-                        email = signUpRequest.email,
-                        passwordHash = encoder.encode(signUpRequest.password),
-                        telefone = signUpRequest.telefone,
-                        role = "USER"
-                    )
-
-                    userRepository.save(user)
+                    userService.registerUser(signUpRequest)
                         .map {
                             ResponseEntity.ok(MessageResponse("Utilizador registado com sucesso!"))
                         }

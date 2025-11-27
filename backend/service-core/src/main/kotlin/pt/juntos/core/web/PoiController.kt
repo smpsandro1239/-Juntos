@@ -12,22 +12,15 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import pt.juntos.core.domain.Poi
-import pt.juntos.core.repository.PoiRepository
+import pt.juntos.core.service.PoiService
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.data.redis.core.ReactiveRedisTemplate
-import java.time.Duration
-import io.micrometer.core.instrument.MeterRegistry
 
 @RestController
 @RequestMapping("/v1/pois")
 @Tag(name = "POIs", description = "Pontos de Interesse Familiares")
 class PoiController(
-    private val poiRepository: PoiRepository,
-    private val redisTemplate: ReactiveRedisTemplate<String, String>,
-    private val objectMapper: ObjectMapper,
-    private val meterRegistry: MeterRegistry
+    private val poiService: PoiService
 ) {
 
     @GetMapping
@@ -40,7 +33,7 @@ class PoiController(
         @Parameter(description = "Idade máxima das crianças") @RequestParam(defaultValue = "12") idadeMax: Int,
         @Parameter(description = "Limite de resultados") @RequestParam(defaultValue = "20") limite: Int
     ): Flux<Poi> {
-        return poiRepository.findNearbyByAge(lat, lng, raio, idadeMin, idadeMax, limite)
+        return poiService.findNearby(lat, lng, raio, idadeMin, idadeMax, limite)
     }
 
     @GetMapping("/search")
@@ -49,13 +42,13 @@ class PoiController(
         @Parameter(description = "Termo de pesquisa") @RequestParam q: String,
         @Parameter(description = "Limite de resultados") @RequestParam(defaultValue = "20") limite: Int
     ): Flux<Poi> {
-        return poiRepository.searchByTerm("%$q%", limite)
+        return poiService.search(q, limite)
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obter POI por ID", description = "Retorna detalhes completos de um POI")
     fun findById(@Parameter(description = "ID do POI") @PathVariable id: Long): Mono<ResponseEntity<Poi>> {
-        return poiRepository.findById(id)
+        return poiService.findById(id)
             .map { ResponseEntity.ok(it) }
             .defaultIfEmpty(ResponseEntity.notFound().build())
     }
@@ -63,23 +56,15 @@ class PoiController(
     @GetMapping("/categoria/{categoria}")
     @Operation(summary = "POIs por categoria", description = "Lista POIs de uma categoria específica")
     fun findByCategory(@Parameter(description = "Categoria") @PathVariable categoria: String): Flux<Poi> {
-        return poiRepository.findByCategoriaAndAtivoTrue(categoria)
+        return poiService.findByCategory(categoria)
     }
 
     @GetMapping("/stats")
     @Operation(summary = "Estatísticas", description = "Estatísticas gerais dos POIs")
     fun getStats(): Mono<Map<String, Any>> {
-        return poiRepository.countActive()
+        return poiService.countActive()
             .map { count -> mapOf("totalPois" to count, "status" to "ativo") }
     }
-
-    data class PaginatedResult<T>(
-        val items: List<T>,
-        val page: Int,
-        val size: Int,
-        val total: Long,
-        val totalPages: Int
-    )
 
     @GetMapping("/paginated")
     @Operation(summary = "Listar POIs paginados", description = "Retorna POIs paginados (ativos)")
@@ -93,101 +78,28 @@ class PoiController(
         @Parameter(description = "Latitude para filtro por distância") @RequestParam(required = false) lat: Double?,
         @Parameter(description = "Longitude para filtro por distância") @RequestParam(required = false) lng: Double?,
         @Parameter(description = "Raio em metros para filtro por distância") @RequestParam(required = false) raio: Int?
-    ): Mono<ResponseEntity<PaginatedResult<Poi>>> {
-        val validatedPage = if (page < 0) 0 else page
-        val validatedSize = when {
-            size <= 0 -> 20
-            size > 100 -> 100
-            else -> size
-        }
-
-        // Build cache key from params
-        val cacheKey = "pois:paginated:page=$validatedPage:size=$validatedSize:q=${q ?: ""}:cat=${categoria ?: ""}:iMin=${idadeMin ?: ""}:iMax=${idadeMax ?: ""}:lat=${lat ?: ""}:lng=${lng ?: ""}:r=${raio ?: ""}"
-
-        val cached = redisTemplate.opsForValue().get(cacheKey)
-
-        return cached.flatMap { str ->
-            try {
-                meterRegistry.counter("cache.pois.hits").increment()
-                val result = objectMapper.readValue(str, PaginatedResult::class.java) as PaginatedResult<Poi>
-                ResponseEntity.ok(result).toMono()
-            } catch (ex: Exception) {
-                Mono.empty()
-            }
-        }.switchIfEmpty(
-            // No cache: query DB
-            Mono.zip(
-                poiRepository.findFilteredPaginated(validatedPage, validatedSize, q, categoria, idadeMin, idadeMax, lat, lng, raio)
-                    .collectList(),
-                poiRepository.countFiltered(q, categoria, idadeMin, idadeMax, lat, lng, raio)
-            ).flatMap { tuple ->
-                val items = tuple.t1
-                val total = tuple.t2 ?: 0L
-                val totalPages = if (total == 0L) 0 else ((total + validatedSize - 1) / validatedSize).toInt()
-                val result = PaginatedResult(items, validatedPage, validatedSize, total, totalPages)
-                try {
-                    meterRegistry.counter("cache.pois.misses").increment()
-                    val json = objectMapper.writeValueAsString(result)
-                    redisTemplate.opsForValue().set(cacheKey, json, Duration.ofSeconds(60)).subscribe()
-                } catch (ex: Exception) {
-                    // ignore cache errors
-                }
-                ResponseEntity.ok(result).toMono()
-            }
-        )
-    }
-
-    private fun invalidatePoisCache(): Mono<Boolean> {
-        // Default: clear all paginated keys
-        return redisTemplate.keys("pois:paginated:*")
-            .flatMap { key -> redisTemplate.delete(key) }
-            .then(Mono.just(true))
-    }
-
-    private fun invalidateCacheByCategory(categoria: String?): Mono<Boolean> {
-        if (categoria.isNullOrBlank()) return Mono.just(false)
-        val pattern = "pois:paginated:*:cat=${categoria}:*"
-        return redisTemplate.keys(pattern).flatMap { k -> redisTemplate.delete(k) }.then(Mono.just(true))
-    }
-
-    private fun invalidateCacheByPoi(poi: Poi): Mono<Boolean> {
-        // Simple strategy: invalidate by category and by any paginated queries with lat/lng present
-        val byCat = invalidateCacheByCategory(poi.categoria)
-        val byGeo = redisTemplate.keys("pois:paginated:*:lat=*").flatMap { k -> redisTemplate.delete(k) }.then(Mono.just(true))
-        return Mono.zip(byCat, byGeo).map { true }
+    ): Mono<ResponseEntity<PoiService.PaginatedResult<Poi>>> {
+        return poiService.findPaginated(page, size, q, categoria, idadeMin, idadeMax, lat, lng, raio)
+            .map { ResponseEntity.ok(it) }
     }
 
     @PostMapping
     fun createPoi(@RequestBody poi: Poi): Mono<ResponseEntity<Poi>> {
-        return poiRepository.save(poi)
-            .flatMap { saved ->
-                invalidateCacheByPoi(saved).thenReturn(ResponseEntity.ok(saved))
-            }
+        return poiService.createPoi(poi)
+            .map { ResponseEntity.ok(it) }
     }
 
     @PutMapping("/{id}")
     fun updatePoi(@PathVariable id: Long, @RequestBody poi: Poi): Mono<ResponseEntity<Poi>> {
-        return poiRepository.findById(id)
-            .flatMap { existing ->
-                val updated = existing.copy(
-                    nome = poi.nome,
-                    descricao = poi.descricao,
-                    categoria = poi.categoria,
-                    ativo = poi.ativo
-                    // ... copy other fields as needed
-                )
-                poiRepository.save(updated)
-            }
-        .flatMap { saved -> invalidateCacheByPoi(saved).thenReturn(ResponseEntity.ok(saved)) }
+        return poiService.updatePoi(id, poi)
+            .map { ResponseEntity.ok(it) }
             .defaultIfEmpty(ResponseEntity.notFound().build())
     }
 
     @DeleteMapping("/{id}")
     fun deletePoi(@PathVariable id: Long): Mono<ResponseEntity<Void>> {
-        return poiRepository.findById(id)
-            .flatMap { existing ->
-                poiRepository.delete(existing).then(invalidateCacheByPoi(existing)).thenReturn(ResponseEntity.noContent().build<Void>())
-            }
+        return poiService.deletePoi(id)
+            .then(Mono.just(ResponseEntity.noContent().build<Void>()))
             .defaultIfEmpty(ResponseEntity.notFound().build())
     }
 }
