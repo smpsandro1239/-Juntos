@@ -78,6 +78,46 @@ services:
       redis:
         condition: service_healthy
 
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./backend/service-core
+      dockerfile: Dockerfile
+    container_name: juntos-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/juntos_dev
+      SPRING_DATASOURCE_USERNAME: juntos_user
+      SPRING_DATASOURCE_PASSWORD: juntos_pass
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    networks:
+      - juntos-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Frontend Admin (React/Vite)
+  admin:
+    build:
+      context: ./apps/admin
+      dockerfile: Dockerfile
+    container_name: juntos-admin
+    environment:
+      VITE_API_URL: http://localhost:8080/v1
+    ports:
+      - "5173:5173"
+    networks:
+      - juntos-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
     driver: local

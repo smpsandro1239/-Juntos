@@ -1,9 +1,8 @@
 FROM node:18 AS build
 WORKDIR /app
-COPY apps/admin/package*.json ./
-COPY apps/admin/yarn.lock ./
+COPY package*.json ./
 RUN npm ci --legacy-peer-deps
-COPY apps/admin/ ./
+COPY . ./
 RUN npm run build
 
 FROM node:18-slim
