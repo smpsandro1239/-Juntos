@@ -54,7 +54,7 @@ class WebSecurityConfig(
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http.cors { it.disable() }
+        http.cors { }
             .csrf { it.disable() }
             .exceptionHandling { it.authenticationEntryPoint(unauthorizedHandler) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
