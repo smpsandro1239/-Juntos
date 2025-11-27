@@ -54,3 +54,12 @@ override.tf.json
 .LSOverride
 .Trashes
 .fseventsd
+
+# Ficheiros gerados por IA
+.antigravity/
+auto_dev.py
+ANALISE.md
+FALTAS.md
+RESUMO.md
+validacao.py
+testes.py
