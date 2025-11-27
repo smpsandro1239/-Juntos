@@ -102,7 +102,17 @@ export interface Event {
 // Funções da API
 export const poisApi = {
   getAll: () => apiClient.get<Poi[]>('/pois'),
-  getPaginated: (page: number, size: number) => apiClient.get<PaginatedResult<Poi>>(`/pois/paginated?page=${page}&size=${size}`),
+  getPaginated: (page: number, size: number, search?: string, categoria?: string, idadeMin?: number, idadeMax?: number, lat?: number, lng?: number, raio?: number) => {
+    let url = `/pois/paginated?page=${page}&size=${size}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (categoria) url += `&categoria=${encodeURIComponent(categoria)}`;
+    if (idadeMin !== undefined) url += `&idadeMin=${idadeMin}`;
+    if (idadeMax !== undefined) url += `&idadeMax=${idadeMax}`;
+    if (lat !== undefined) url += `&lat=${lat}`;
+    if (lng !== undefined) url += `&lng=${lng}`;
+    if (raio !== undefined) url += `&raio=${raio}`;
+    return apiClient.get<PaginatedResult<Poi>>(url);
+  },
   getById: (id: number) => apiClient.get<Poi>(`/pois/${id}`),
   create: (poi: Omit<Poi, 'id'>) => apiClient.post<Poi>('/pois', poi),
   update: (id: number, poi: Partial<Poi>) => apiClient.put<Poi>(`/pois/${id}`, poi),
