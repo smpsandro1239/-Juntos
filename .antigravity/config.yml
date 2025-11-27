@@ -1,0 +1,9 @@
+language: pt-PT           # Português de Portugal obrigatório
+human_interaction: false  # Desativa prompts interativos
+auto_mode: true           # Ativa modo autónomo
+auto_commit: true         # Faz commit automaticamente
+auto_push: true           # Faz push automaticamente
+auto_test: true           # Executa testes após desenvolvimento
+commit_language: pt-PT    # Mensagens de commit em PT-PT
+log_level: info           # Nível de logging
+forbid_brazilian: true    # Rejeita gerundismos e brasileirismos

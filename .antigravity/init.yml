@@ -1,0 +1,4 @@
+trigger: on_project_open
+action: run_script
+script: auto_dev.py
+log: logs/init.log
