@@ -1,0 +1,19 @@
+# ⚠️ ATENÇÃO: Backend é Kotlin, não Node.js!
+
+## O que aconteceu?
+Tentou executar `npm run dev` no backend, mas o backend é **Kotlin/Spring Boot**, não Node.js/React!
+
+## ✅ Solução Rápida
+
+### Use o IntelliJ IDEA:
+1. Abra `backend/service-core` no IntelliJ
+2. Localize `JuntosApplication.kt`
+3. Clique direito → **Run**
+
+### Ou veja o guia completo:
+📖 **LANCAR_BACKEND.md**
+
+---
+
+**Admin (React)** → `npm run dev` ✅ (já a correr)
+**Backend (Kotlin)** → IntelliJ IDEA ou Gradle ❌ (não npm!)
